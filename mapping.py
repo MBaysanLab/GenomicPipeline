@@ -1,16 +1,77 @@
 import os
-import glob
 from log_command import log_command
 from paths import GetPaths
+import helpers
+import glob
 import re
 import gzip
-import shutil
+
 
 
 class Mapping(object):
 
-    def __init__(self, working_directory, map_type, sample_type, library_matching_id, thrds):
+    """
+    This class basically contain 1 main function and 2  complementary function and 2 helper function.
+    Main purpose of this class is aligning raw fastq file data according to reference genome and
+    create mapped bam file.
 
+    This file will be in process in sorting and indexing functions and return Sorted and Indexed files
+    with .bam and .bai extensions.
+
+    There is also 2 helper functions in order to get files and information for files.
+
+    Key function is mapping function. This function create a script in string format and give it to linux system and
+    run algorithms in terminal
+
+
+    Attributes
+    ----------
+    working_directory : str
+        file path which contains .fastq.gz files.
+    map_type : str
+        option for mapping algorithm, BWA or Bowtie2
+    sample_type : str
+        type of sample, Tumor or Germline(Normal)
+    library_matching_id : str
+        id of patient who has got sample
+    thrds : int
+        number of core that wanted to use
+
+    Methods
+    -------
+    get_fastq():
+        Get fastq files inside working directory and return it as list
+    get_info(fastq_list):
+        Get information from sample file and return a information form in dictionary
+    mapping():
+        Map fastq files according to reference genome and return bam files. Bwa and Bowtie2 are options.
+    convert_sort():
+        Sort bam files
+    create_index():
+        Create index for bam files
+    create_folder():
+        Move files which created in this step to Mapping folder
+    """
+
+    def __init__(self, working_directory, map_type, sample_type, library_matching_id, thrds, trim):
+        """
+        Parameters
+        ----------
+        working_directory : str
+            The folder directory of where fastq files are in
+        map_type : str
+            Mapping algorithm decision: Bwa or Bowtie2
+        sample_type : str
+            Type of sample: Tumor or Germline
+        library_matching_id : str
+            ID of patient which own the sample
+        thrds : str
+            Number of cores that wanted to use
+        bundle_dir : str
+            Path directory for reference files
+        file_list : str
+            List of files that created in this step
+        """
         self.get_paths = GetPaths()
         if working_directory[-1] == "/" or working_directory[-1] == "\\":
             self.working_directory = working_directory[:-1]
@@ -21,48 +82,27 @@ class Mapping(object):
         self.library_matching_id = library_matching_id
         self.threads = str(thrds)
         self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"
+        self.trim = trim
         self.file_list = []
         os.chdir(self.working_directory)
 
-    #get fastq files with gziped version in selected folder
-    def get_fastq(self):
-        all_fastq_files = glob.glob("*fastq.gz")
-        split_names_v = [os.path.splitext(os.path.splitext(i)[0])[0] for i in all_fastq_files]
-        return split_names_v
-
-    #get information from samples' name such as paired end read, lane
-    def get_info(self, fastq_list):
-        sample_ID, germline_dna, index_seq, lanes, pairs_r, n_of_seq = (set() for i in range(6))
-        if self.sample_type == "Tumor":
-            for i in fastq_list:
-                sample_ID.add(i.split("_")[0])
-                index_seq.add(i.split("_")[1])
-                lanes.add(i.split("_")[2])
-                pairs_r.add(i.split("_")[3])
-                n_of_seq.add(i.split("_")[4])
-
-            list_with_info = {"Sample_ID": list(sample_ID), "Index": list(index_seq), "Lanes": list(lanes),
-                              "Pairs": list(pairs_r), "Number_of_seq": list(n_of_seq)}
-            return list_with_info
-        elif self.sample_type == "Germline":
-
-            for i in fastq_list:
-                sample_ID.add(i.split("_")[0])
-                germline_dna.add(i.split("_")[1])
-                index_seq.add(i.split("_")[2])
-                lanes.add(i.split("_")[3])
-                pairs_r.add(i.split("_")[4])
-                n_of_seq.add(i.split("_")[5])
-
-            list_with_info = {"Sample_ID": list(sample_ID), "Germline": list(germline_dna), "Index": list(index_seq),
-                              "Lanes": list(lanes), "Pairs": list(pairs_r), "Number_of_seq": list(n_of_seq)}
-            return list_with_info
-        else:
-            print("raise error and ask again for a valid sample type")
-
     def mapping(self):
-        fastq_list = self.get_fastq()
-        info_dict = self.get_info(fastq_list)
+
+        """
+        End of this function mapping job is done in terms of selected mapping algorithms Bwa or Bowtie2. There is 5
+        important step in this function.
+        - First is reading a fastq file first line in order to get information given
+        by sequence machine.
+        - Second thing is creating table by same group of paired-end reads and lanes for mapping.
+        - Thirdly, adding a custom read group information and give it to mapping alghorithm. This information will be
+        in bam files which are created in this step.
+        - Fourthly, creating a complete script as string type.
+        - Lastly, created script is given to linux terminal system. The point is algorithms must be in path
+
+
+        """
+        fastq_list = helpers.get_fastq(self.trim)
+        info_dict = helpers.get_info(self.sample_type, fastq_list)
         RG_SM = info_dict["Sample_ID"][0]
         RG_PL = "Illumina"
         RG_LB = self.library_matching_id
@@ -110,7 +150,7 @@ class Mapping(object):
                 self.convert_sort(gene_origin)
 
         all_sortedbam_files = glob.glob("SortedBAM*.bam")
-        self.create_folder(self.file_list)
+        helpers.create_folder(self.working_directory, self.file_list, map_type=self.map_type, step="Mapping")
         print("print sorted all bam files ")
         print(all_sortedbam_files)
         return all_sortedbam_files
@@ -120,31 +160,16 @@ class Mapping(object):
                        self.threads + " -o SortedBAM_" + sort_gene_origin
         log_command(convert_sort, "Convert Sort", self.threads, "Mapping")
         self.file_list.append("SortedBAM_" + sort_gene_origin)
-        self.create_index("SortedBAM_" + sort_gene_origin)
+        helpers.create_index("SortedBAM_" + sort_gene_origin, "Create Index", self.threads, "Mapping")
 
-    def create_index(self, lastbam):
-        indexcol = "java -jar " + self.get_paths.picard_path + " BuildBamIndex I=" + lastbam
-        log_command(indexcol, "Create Index", self.threads, "Mapping")
-        self.file_list.append(lastbam[:-3] + "bai")
 
-    def all_bam_files_after_map(self):
-        bam_files = glob.glob("SortedBAM*.bam")
-        return bam_files
 
-    def create_folder(self, all_files):
-        all_files.append("log_file.txt")
-        mk_dir = self.working_directory + "/" + self.map_type
-        os.mkdir(mk_dir)
-        mk_dir += "/Mapping"
-        os.mkdir(mk_dir)
-        for file in all_files:
-            if file[-2:] != "gz":
-                print("mapping crate folder print " + file)
-                shutil.move(self.working_directory + "/" + file, mk_dir + "/" + file)
+
+
 
 
 if __name__ == "__main__":
-    mapping_step = Mapping(working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/Genomics_Pipeline_Test/test_files",
-                           map_type="Bwa", sample_type="Tumor", library_matching_id="203", thrds="1")
+    mapping_step = Mapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_37",
+                           map_type="Bwa", sample_type="Tumor", library_matching_id="11111", thrds="6")
     mapping_files = mapping_step.mapping()
     print(mapping_files)
