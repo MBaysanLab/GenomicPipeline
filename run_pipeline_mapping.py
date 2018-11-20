@@ -1,11 +1,13 @@
 import mapping
 import pre_processing
 import gatk_pre_processing
-import sys
+import qc_trim
+import helpers
+import os
 
 
 
-def callmapping(var_maptype, var_sampletype, working_directory, library, threads, var_gatk_tools, issplitchr):
+def callmapping(var_maptype, var_sampletype, working_directory, library, threads, var_gatk_tools, issplitchr, trim):
     mt = var_maptype
     st = var_sampletype
     wd = working_directory
@@ -15,12 +17,23 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
     th = threads
     gt = var_gatk_tools
     sc = issplitchr
+    tr = trim
+    os.chdir(wd)
+
+    fastq_list = helpers.get_fastq()
+    info_dict = helpers.get_info(st, fastq_list)
+
+    if tr == "Yes":
+        qc = qc_trim.QC(wd, st, th, fastq_list, info_dict)
+        qc.run_qc()
+
+
+
     mapping_step = mapping.Mapping(working_directory=wd, map_type=mt, sample_type=st, library_matching_id=lb,
-                                   thrds=th)
+                                   thrds=th, trim=tr)
 
     mapping_files = mapping_step.mapping()
-    fastq_list = mapping_step.get_fastq()
-    info_dict = mapping_step.get_info(fastq_list)
+
     print("---------------------------")
     print(mapping_files)
     pre_processing_step = pre_processing.PreProcessing(working_directory=wd, map_type=mt, sample_type=st,
@@ -52,8 +65,8 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
 
 
 if __name__ == "__main__":
-    callmapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_46",
-                var_maptype="Bowtie2", var_sampletype="Germline", library="1", threads="1", var_gatk_tools="Yes",
-                issplitchr="No")
+    callmapping(working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/pipeline_old_versions/Genomics_Pipeline_Test/test_files",
+                var_maptype="Bwa", var_sampletype="Tumor", library="3", threads="4", var_gatk_tools="Yes",
+                issplitchr="No", trim="No")
 
 

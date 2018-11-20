@@ -1,4 +1,5 @@
 import variant_calling
+import variant_annotation
 
 
 def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype, var_variantcaller, threads_p,
@@ -29,11 +30,17 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
                                                 tumor_interval=None, sample_name=s_name,  tumor_only=tumor_only)
     pipeline2_success = pipeline2.run_pipeline()
 
+    annotate = variant_annotation.VariantAnnotation(variant_annotater="Annovar", thread_v=threads_p,
+                                                    wd=pipeline2_success, sample_name=s_name, will_annotate=[],
+                                                    annotate_all=True)
+
+    annotate.run_annotation()
+
     return pipeline2_success
 
 
 call_variant_caller(var_variantcaller="Mutect2", threads_p=3, var_maptype="Bwa",
                     germline_bam="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_46/Bowtie2/PreProcess/GATK4_MDUP_Bowtie2_46_MergedBAM.bam",
-                    working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_42/Bwa/PreProcess",
-                    tumor_bam="GATK_PRIR_MDUP_Bwa_42_MergedBAM.bam", s_name="42", tumor_only="Yes")
+                    working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/pipeline_old_versions/Genomics_Pipeline_Test/test_files/Bwa/PreProcess",
+                    tumor_bam="GATK4_MDUP_Bwa_NB17_MergedBAM.bam", s_name="NB17", tumor_only="Yes")
 

@@ -2,6 +2,7 @@ import os
 import glob
 from log_command import log_command
 from paths import GetPaths
+import helpers
 import shutil
 
 
@@ -25,25 +26,8 @@ class VariantAnnotation(object):
         self.file_list = []
 
     def run_annotation(self):
-
         if self.v_annotater == "Annovar":
             self.annovar_vcf_files(self.annotate_files)
-        else:
-            self.annovar_vcf_file(self.annotate_files)
-
-
-    def annovar_vcf_file(self, input_f):
-        input_file = self.working_directory + "/" + input_f
-        output_f = self.sample_name + "_Annovar_" + "_".join(input_f.split(".")[:-1])
-        output_file = self.working_directory + "/" + output_f
-        command = self.annovar_dir + " --vcfinput " + input_file + " " + self.humandb + " -buildver hg19 -out " + \
-                  output_file + " -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f " \
-                  "-nastring . -polish -xreffile " + self.xref
-
-        log_command(command, "Annovar", self.threads, "Variant Annotation")
-        output_fs = glob.glob("*" + output_f + "*")
-        self.file_list.extend(output_fs)
-        self.create_folder(self.file_list)
 
     def annovar_vcf_files(self, input_fs):
         print(input_fs)
@@ -57,27 +41,17 @@ class VariantAnnotation(object):
                           "-nastring . -polish -xreffile " + self.xref
                 print(command)
                 log_command(command, "Annovar", self.threads, "Variant Annotation")
-                output_fs = glob.glob("*"+ output_f + "*")
+                output_fs = glob.glob("*" + output_f + "*")
                 self.file_list.extend(output_fs)
-            self.create_folder(self.file_list)
+            helpers.create_folder(self.working_directory, self.file_list, step="Annovar",
+                                  folder_directory=self.working_directory)
         else:
             return False
 
-    def create_folder(self, all_files):
-        up_dir = str(self.working_directory).split("/")[:-1]
-        mk_dir = "/".join(up_dir) + "/" + self.v_annotater
-        print("**************MKDIR 1 CREATE A FİLE ***************")
-        print(mk_dir)
-        os.mkdir(mk_dir)
-        print("**************MKDIR 2 FİLE CREATED ***************")
-        for file in all_files:
-            if file[-2:] != "gz":
-                print(file)
-                shutil.move(self.working_directory + "/" + file, mk_dir + "/" + file)
 
 if __name__ == "__main__":
     annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=4,
-                            wd="/home/bioinformaticslab/Desktop/AMBRY/Sample_NB17/All4",
+                            wd="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_38/Bwa/Varscan",
                             sample_name="S38", will_annotate=["Bowtie2_Mutect2_gatk3_38.vcf"], annotate_all=True)
 
     annotate.run_annotation()

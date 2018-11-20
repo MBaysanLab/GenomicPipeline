@@ -2,6 +2,7 @@ import os
 import glob
 from log_command import log_command
 from paths import GetPaths
+import helpers
 import shutil
 
 
@@ -19,11 +20,6 @@ class GatkPreProcessing(object):
         self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"
         self.file_list = []
         os.chdir(self.working_directory)
-
-    def create_index(self, lastbam):
-        indexcol = "java -jar " + self.get_paths.picard_path + " BuildBamIndex I=" + lastbam
-        log_command(indexcol, "Create Index", self.threads, "GatkPreProcessing")
-        self.file_list.append(lastbam[:-3] + "bai")
 
     def gatk3_realign_target_creator(self, lastbam):
         realign_target = str(lastbam).split(".")[0] + "_realign_target.intervals"
@@ -67,7 +63,10 @@ class GatkPreProcessing(object):
                "/ucsc.hg19.fasta -I " + lastbam + " --BQSR " + bqsr + " -o " + aftercalibratorBam
         log_command(bcal, "Print Reads", self.threads, "GatkPreProcessing")
         self.file_list.append(aftercalibratorBam)
-        self.create_index(aftercalibratorBam)
+        indexed = helpers.create_index(aftercalibratorBam, "Create Index by GATK_PrintReads", self.threads,
+                                   "GatkPreProcess")
+        self.file_list.append(indexed)
+
 
     def gatk4_base_recalibrator(self, lastbam):
         recal_table = str(lastbam).split(".")[0] + "_RECAL.table"
@@ -85,8 +84,8 @@ class GatkPreProcessing(object):
                         lastbam + " --bqsr-recal-file " + recaltable + " -O " + afterbqsrbam
         log_command(apply_command, "ApplyBQSR", self.threads, "Gatk4PreProcessing")
         self.file_list.append(afterbqsrbam)
-        self.create_index(afterbqsrbam)
-
+        indexed = helpers.create_index(afterbqsrbam, "Create Index by GATK_ApplyBSQR", self.threads, "GatkPreProcess")
+        self.file_list.append(indexed)
 
     def run_gatks3(self, after_markdpl):
 
@@ -95,7 +94,6 @@ class GatkPreProcessing(object):
         basequality = self.gatk3_base_recalibrator(realigned_bam)
         self.gatk3_print_reads(realigned_bam, basequality)
         gatk_files = glob.glob("GATK_*.bam")
-        #self.create_folder(self.file_list)
         return gatk_files
 
     def run_gatks4(self, after_markdpl):
@@ -103,15 +101,6 @@ class GatkPreProcessing(object):
         self.gatk4_applybsqr(after_markdpl, basequality)
         gatk_files = glob.glob("GATK_*.bam")
         return gatk_files
-
-    def create_folder(self, all_files):
-        all_files.append("log_file.txt")
-        mk_dir = self.folder_directory + "/GatkPreProcess"
-        os.mkdir(mk_dir)
-        for file in all_files:
-            if file[-2:] != "gz":
-                print(file)
-                shutil.move(self.working_directory + "/" + file, mk_dir + "/" + file)
 
 
 if __name__ == "__main__":

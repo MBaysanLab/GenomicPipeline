@@ -2,19 +2,50 @@ import os
 import glob
 from log_command import log_command
 from paths import GetPaths
-import shutil
-import subprocess
-import tempfile
+import helpers
 
 
 class VariantCall(object):
+    """
+    This class finds variants in given tumor and germilne sample. There are 3 main variant caller in this class and
+    user must choose one of them in proper string format. Mutect2, Varscan and Strelka are the possible variant
+    caller in this class.
+
+    Mutect2 is from GATK4 so you don t need interval lists of tumor and germline samples. The important thing is
+    given tumor and germline sample read group must be set. On the other hand
+
+    Attributes
+    ----------
+    variant_caller : str
+        One of these variant caller Mutect2, Varscan and Strelka
+    thrds : str
+        option for mapping algorithm, BWA or Bowtie2
+    map_type : str
+        type of sample, Tumor or Germline(Normal)
+    germline_bam : str
+        id of patient who has got sample
+    wd : str
+        number of core that wanted to use
+    tumor_bam : str
+        type of sample, Tumor or Germline(Normal)
+    sample_name : str
+        id of patient who has got sample
+    tumor_only : str
+        number of core that wanted to use
+    tumor_interval : str
+        id of patient who has got sample
+    germline_interval : str
+        number of core that wanted to use
+
+    """
 
     def __init__(self, variant_caller, thrds, map_type, germline_bam, wd, tumor_bam, sample_name, tumor_only,
                  tumor_interval=None, germline_interval=None):
         self.get_paths = GetPaths()
         self.working_directory = wd
-        # self.folder_directory = wd + "/" + map_type
-        # self.working_directory = wd + "/" + map_type + "/GatkPreProcess"
+        up_dir = str(self.working_directory).split("/")[:-1]
+
+        self.folder_directory = "/".join(up_dir)
         os.chdir(self.working_directory)
         print(self.working_directory)
         self.v_caller = variant_caller
@@ -36,22 +67,33 @@ class VariantCall(object):
     def run_pipeline(self):
         if self.tumor_only_mode:
             if self.v_caller == "Mutect2":
-                self.mutect_tumor_only()
+                #self.mutect_tumor_only()
                 files = glob.glob("*.vcf*")
-                self.create_folder(files)
+                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2",
+                                      folder_directory=self.folder_directory)
+                return self.folder_directory + "/" + "Mutect2"
         else:
             if self.v_caller == "Mutect2":
                 self.mutect_caller()
                 files = glob.glob("*.vcf*")
-                self.create_folder(files)
+                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2",
+                                      folder_directory=self.folder_directory)
+                return self.folder_directory + "/" + "Mutect2"
+
             elif self.v_caller == "Varscan":
                 self.varscan_caller()
                 files = glob.glob("*.vcf*")
-                self.create_folder(files)
+                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Varscan",
+                                      folder_directory=self.folder_directory)
+                return self.folder_directory + "/" + "Varscan"
+
             elif self.v_caller == "Mutect2_gatk3":
                 self.mutect_caller_gatk3()
                 files = glob.glob("*.vcf*")
-                self.create_folder(files)
+                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2_GATK3",
+                                      folder_directory=self.folder_directory)
+                return self.folder_directory + "/" + "Mutect2_GATK3"
+
             elif self.v_caller == "Strelka":
                 self.strelka_caller()
             else:
@@ -70,8 +112,8 @@ class VariantCall(object):
     def mutect_caller(self):
 
         mutect_output = self.working_directory + "/" + self.output_name + ".vcf"
-        normal_s_name = self.get_sample_name(self.germline_bam)
-        tumor_s_name = self.get_sample_name(self.tumor_bam)
+        normal_s_name = helpers.get_sample_name(self.germline_bam)
+        tumor_s_name = helpers.get_sample_name(self.tumor_bam)
 
         #if normal_s_name==
         command = self.get_paths.gatk4_path + " Mutect2 " + " -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor "\
@@ -82,7 +124,7 @@ class VariantCall(object):
 
     def mutect_tumor_only(self):
         mutect_output = self.working_directory + "/" + "TumorOnly_" + self.output_name + ".vcf"
-        tumor_s_name = self.get_sample_name(self.tumor_bam)
+        tumor_s_name = helpers.get_sample_name(self.tumor_bam)
         command = self.get_paths.gatk4_path + " Mutect2 -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor " + \
                   tumor_s_name + " -O " + mutect_output
         print(command)
@@ -154,37 +196,7 @@ class VariantCall(object):
         run_workflow_command = "python runWorkflow.py -m local -j " + self.threads
         log_command(run_workflow_command, "Strelka Create Workflow", self.threads, "Variant Calling")
 
-    def create_folder(self, all_files):
-        up_dir = str(self.working_directory).split("/")[:-1]
-        mk_dir = "/".join(up_dir) + "/" + self.v_caller
-        print("**************MKDIR 1 ***************")
-        os.mkdir(mk_dir)
-        print(mk_dir)
-        print("**************MKDIR 2 ***************")
-        for file in all_files:
-            if file[-2:] != "gz":
-                print(file)
-                shutil.move(self.working_directory + "/" + file, mk_dir + "/" + file)
 
-    def get_sample_name(self, bamfile):
-        command = "samtools view -H " + bamfile
-        cmd = command.split(" ")
-        try:
-            with tempfile.TemporaryFile() as tempf:
-                proc = subprocess.Popen(cmd, stdout=tempf)
-                proc.wait()
-                tempf.seek(0)
-                output_split = str(tempf.read()).split("\\n")
-                for a in output_split:
-                    rg = a[:3]
-                    if rg == "@RG":
-                        get_sm = a.split("\\t")
-                        for sm in get_sm:
-                            if sm[:2] == "SM":
-                                print(sm[3:])
-                                return sm[3:]
-        except:
-            return False
 
 #variant_caller, thrds, map_type, germline_bam, germline_interval, wd, tumor_bam, tumor_interval
 if __name__ == "__main__":

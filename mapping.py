@@ -7,7 +7,6 @@ import re
 import gzip
 
 
-
 class Mapping(object):
 
     """
@@ -82,7 +81,14 @@ class Mapping(object):
         self.library_matching_id = library_matching_id
         self.threads = str(thrds)
         self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"
-        self.trim = trim
+        if trim == "Yes":
+            self.trim = True
+        else:
+            self.trim = False
+
+        # if self.trim:
+        #     self.qc = QC(self.working_directory, self.sample_type ,self.threads)
+
         self.file_list = []
         os.chdir(self.working_directory)
 
@@ -101,8 +107,8 @@ class Mapping(object):
 
 
         """
-        fastq_list = helpers.get_fastq(self.trim)
-        info_dict = helpers.get_info(self.sample_type, fastq_list)
+        fastq_list = helpers.get_fastq()
+        info_dict = helpers.get_info(self.sample_type, fastq_list, self.trim)
         RG_SM = info_dict["Sample_ID"][0]
         RG_PL = "Illumina"
         RG_LB = self.library_matching_id
@@ -126,6 +132,9 @@ class Mapping(object):
                 gene_origin = self.map_type + "_" + info_dict["Sample_ID"][0] + "_" + info_dict["Index"][
                     0] + "_" + i + "_" + k + ".bam"
 
+                # if self.trim == "Yes":
+                #     self.qc.qc_trim(read1[0], read2[0])
+
                 if self.map_type == "Bwa":
                     add_read_group = ' -R "@RG\\tID:' + RG_ID + '\\tSM:' + RG_SM + '\\tLB:' + RG_LB + '\\tPL:' + \
                                      RG_PL + '\\tPU:' + RG_PU + '" '
@@ -133,7 +142,7 @@ class Mapping(object):
                     map_bam = "bwa mem -t " + self.threads + " " + add_read_group + self.get_paths.ref_dir + \
                               "Bwa/ucsc.hg19.fasta " + read1[0] + " " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
-                    print("mapping" + map_bam)
+                    print("mapping =>" + map_bam)
                 elif self.map_type == "Bowtie2":
 
                     add_read_group = " --rg-id " + RG_ID + " --rg SM:" + RG_SM + " --rg LB:" + RG_LB + " --rg PL:" + \
@@ -142,6 +151,7 @@ class Mapping(object):
                     map_bam = "bowtie2 -p" + self.threads + add_read_group + " -x " + self.get_paths.ref_dir + \
                               "Bowtie2/hg_19_bowtie2 -1 " + read1[0] + " -2 " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
+                    print("mapping =>" + map_bam)
                 else:
                     return "Please specify the map type Bwa/Bowtie "
 
@@ -160,16 +170,12 @@ class Mapping(object):
                        self.threads + " -o SortedBAM_" + sort_gene_origin
         log_command(convert_sort, "Convert Sort", self.threads, "Mapping")
         self.file_list.append("SortedBAM_" + sort_gene_origin)
-        helpers.create_index("SortedBAM_" + sort_gene_origin, "Create Index", self.threads, "Mapping")
-
-
-
-
-
+        indexed = helpers.create_index("SortedBAM_" + sort_gene_origin, "Create Index", self.threads, "Mapping")
+        self.file_list.append(indexed)
 
 
 if __name__ == "__main__":
-    mapping_step = Mapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_37",
-                           map_type="Bwa", sample_type="Tumor", library_matching_id="11111", thrds="6")
+    mapping_step = Mapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_38",
+                           map_type="Bowtie2", sample_type="Tumor", library_matching_id="11111", thrds="4", trim="Yes")
     mapping_files = mapping_step.mapping()
     print(mapping_files)
