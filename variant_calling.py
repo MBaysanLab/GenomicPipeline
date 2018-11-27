@@ -11,37 +11,39 @@ class VariantCall(object):
     user must choose one of them in proper string format. Mutect2, Varscan and Strelka are the possible variant
     caller in this class.
 
-    Mutect2 is from GATK4 so you don t need interval lists of tumor and germline samples. The important thing is
-    given tumor and germline sample read group must be set. On the other hand
+    Mutect2 is from GATK4 so you don t need interval lists of tumor and germline samples that is exist in GATK3.
+    However you are able to use Mutect2 in GATK3 with "Mutect2_gatk3" variant caller option.
+
 
     Attributes
     ----------
     variant_caller : str
         One of these variant caller Mutect2, Varscan and Strelka
-    thrds : str
-        option for mapping algorithm, BWA or Bowtie2
+    thrds : str/int
+        Number of cores that wanted to use
     map_type : str
-        type of sample, Tumor or Germline(Normal)
+        Used mapping algorithm in previous
     germline_bam : str
-        id of patient who has got sample
+        Germline(Normal) Bam file with its path
     wd : str
-        number of core that wanted to use
+        The folder directory of where tumor file is or which directory wanted to be work on
     tumor_bam : str
-        type of sample, Tumor or Germline(Normal)
+        Tumor Bam file(don t need full path if tumor's bam file is in working directory)
     sample_name : str
-        id of patient who has got sample
+        Name of sample
     tumor_only : str
-        number of core that wanted to use
-    tumor_interval : str
-        id of patient who has got sample
-    germline_interval : str
-        number of core that wanted to use
+        Use variant calling just for tumor file(Must be Yes or No)
+    tumor_interval=None : str
+        Interval list file for tumor sample, which is created in GATK step (Created if GATK3 is used)
+    germline_interval=None : str
+        Interval list file for germline sample, which is created in GATK step (Created if GATK3 is used)
 
     """
 
     def __init__(self, variant_caller, thrds, map_type, germline_bam, wd, tumor_bam, sample_name, tumor_only,
                  tumor_interval=None, germline_interval=None):
-        self.get_paths = GetPaths()
+
+        self.get_paths = GetPaths()  # Get paths of algorithms inside paths.py module
         self.working_directory = wd
         up_dir = str(self.working_directory).split("/")[:-1]
 
@@ -52,27 +54,30 @@ class VariantCall(object):
         self.output_name = self.v_caller + "_" + sample_name
         self.threads = str(thrds)
         self.map_type = map_type
-        self.ref_dir = self.get_paths.ref_dir + "hg19_bundle/ucsc.hg19.fasta"
+        self.ref_dir = self.get_paths.ref_dir + "hg19_bundle/ucsc.hg19.fasta"   # contains reference files
         self.tumor_bam = tumor_bam
         self.germline_bam = germline_bam
         if tumor_only == "Yes":
             self.tumor_only_mode = True
         else:
             self.tumor_only_mode = False
+
+        # If selected variant caller is Mutect2 from GATK3
         if variant_caller == "Mutect2_gatk3":
             self.tumor_interval = tumor_interval
             self.germline_interval = germline_interval
             self.realign_target = self.tumor_interval + " " + self.germline_interval
 
+    # This function called for run the selected variant caller
     def run_pipeline(self):
-        if self.tumor_only_mode:
+        if self.tumor_only_mode:  # If tumor only variant caller is selected
             if self.v_caller == "Mutect2":
-                #self.mutect_tumor_only()
+                self.mutect_tumor_only()
                 files = glob.glob("*.vcf*")
                 helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2",
                                       folder_directory=self.folder_directory)
                 return self.folder_directory + "/" + "Mutect2"
-        else:
+        else:  # Tumor and Germline bam
             if self.v_caller == "Mutect2":
                 self.mutect_caller()
                 files = glob.glob("*.vcf*")
@@ -101,35 +106,39 @@ class VariantCall(object):
         return False
 
     def mutect_caller_gatk3(self):
-        mutect_output = self.working_directory + "/" + self.output_name
+        mutect_output = self.working_directory + "/" + self.output_name  # Prepare output name
         nct = " -nct " + self.threads
+        # Prepare the mutect variant caller command
         command = "java -jar " + self.get_paths.gatk_path + " -T MuTect2 " + nct + " -R " + self.ref_dir + \
                   " -I:tumor " + self.tumor_bam + " -I:normal " + self.germline_bam + \
                   " -o " + mutect_output
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling")
+        log_command(command, "Mutect2", self.threads, "Variant Calling")  # "log_command" function run the command in terminal
 
     def mutect_caller(self):
+        mutect_output = self.working_directory + "/" + self.output_name + ".vcf"  # Prepare output name
 
-        mutect_output = self.working_directory + "/" + self.output_name + ".vcf"
+        # "helpers.get_sample_name" function get sample names which is inside read group of bam file
         normal_s_name = helpers.get_sample_name(self.germline_bam)
         tumor_s_name = helpers.get_sample_name(self.tumor_bam)
 
-        #if normal_s_name==
+        # Prepare the mutect variant caller command
         command = self.get_paths.gatk4_path + " Mutect2 " + " -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor "\
                   + tumor_s_name + " -I " + self.germline_bam + " -normal " + normal_s_name + " -O " + mutect_output
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling")
-        self.mutect_select_variant(mutect_output)
+        log_command(command, "Mutect2", self.threads, "Variant Calling")  # "log_command" function run the command in terminal
+        self.mutect_select_variant(mutect_output)  # Separate variants to the SNPs and INDELs file
 
     def mutect_tumor_only(self):
-        mutect_output = self.working_directory + "/" + "TumorOnly_" + self.output_name + ".vcf"
+        mutect_output = self.working_directory + "/" + "TumorOnly_" + self.output_name + ".vcf"  # Prepare output name
+        # "helpers.get_sample_name" function get sample names which is inside read group of bam file
         tumor_s_name = helpers.get_sample_name(self.tumor_bam)
+        # Prepare the mutect variant caller command
         command = self.get_paths.gatk4_path + " Mutect2 -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor " + \
                   tumor_s_name + " -O " + mutect_output
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling Tumor Only")
-        self.mutect_select_variant(mutect_output)
+        log_command(command, "Mutect2", self.threads, "Variant Calling Tumor Only")  # "log_command" function run the command in terminal
+        self.mutect_select_variant(mutect_output)  # Separate variants to the SNPs and INDELs file
 
     def mutect_select_variant(self, mutect_output):
         self.mutect_select_variant_snp(mutect_output)

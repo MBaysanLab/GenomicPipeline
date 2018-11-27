@@ -15,18 +15,17 @@ def get_fastq():
     -------
     list
         A list of fastq files inside of given working directory.
-
     """
+
     all_fastq_files = glob.glob("*fastq.gz")
     split_names_v = [os.path.splitext(os.path.splitext(i)[0])[0] for i in all_fastq_files]
-    print(split_names_v)
     return split_names_v
 
 
 def get_info(sample_type, fastq_list, trimmed=False):
 
     """
-    Prepare set of information in order to use next steps especially creating read group in mapping function.
+    Prepare set of information in order to used in next steps especially creating read group in mapping function.
 
     Returns
     -------
