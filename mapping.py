@@ -71,6 +71,7 @@ class Mapping(object):
             self.working_directory = working_directory[:-1]
         else:
             self.working_directory = working_directory
+
         self.map_type = map_type
         self.sample_type = sample_type
         self.library_matching_id = library_matching_id
@@ -78,8 +79,11 @@ class Mapping(object):
         self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"  # contains reference bundle
         if trim == "Yes":
             self.trim = True
+            self.folder_directory = self.working_directory + "/" + map_type
+            self.working_directory = self.working_directory + "/" + map_type + "/QC"
         else:
             self.trim = False
+            self.folder_directory = self.working_directory
         self.file_list = []
         os.chdir(self.working_directory)
 
@@ -96,7 +100,9 @@ class Mapping(object):
         - Lastly, created script is given to linux terminal system. The key point is algorithms must be in path
 
         """
+        print(os.getcwd())
         fastq_list = helpers.get_fastq()  # Get list of fastq files
+        print(fastq_list)
         info_dict = helpers.get_info(self.sample_type, fastq_list, self.trim)  # Get neccesery information from filename
         # RG_{..} variables are created for prepare read group information.
         RG_SM = info_dict["Sample_ID"][0]
@@ -162,7 +168,8 @@ class Mapping(object):
 
         # Below helper function get working directory, list of files created in this step, maping type and step's name
         # in order to create folder for that particular step inside base on mapping file
-        helpers.create_folder(self.working_directory, self.file_list, map_type=self.map_type, step="Mapping")
+        helpers.create_folder(self.working_directory, self.file_list, map_type=self.map_type, step="Mapping",
+                              folder_directory=self.folder_directory)
         print("print sorted all bam files ")
         print(all_sortedbam_files)
         return all_sortedbam_files  # Return list of sorted bam files

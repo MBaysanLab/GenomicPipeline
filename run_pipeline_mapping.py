@@ -6,7 +6,6 @@ import helpers
 import os
 
 
-
 def callmapping(var_maptype, var_sampletype, working_directory, library, threads, var_gatk_tools, issplitchr, trim):
     mt = var_maptype
     st = var_sampletype
@@ -24,8 +23,9 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
     info_dict = helpers.get_info(st, fastq_list)
 
     if tr == "Yes":
-        qc = qc_trim.QC(wd, st, th, fastq_list, info_dict)
+        qc = qc_trim.QC(wd, st, th, fastq_list, info_dict, mt)
         qc.run_qc()
+        #wd = wd + "/" + mt + "/QC"
 
 
 
@@ -65,8 +65,8 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
 
 
 if __name__ == "__main__":
-    callmapping(working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/pipeline_old_versions/Genomics_Pipeline_Test/test_files",
-                var_maptype="Bwa", var_sampletype="Tumor", library="3", threads="4", var_gatk_tools="Yes",
-                issplitchr="No", trim="No")
+    callmapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/Sample_NOB01_GermlineDNA",
+                var_maptype="Bwa", var_sampletype="Tumor", library="923", threads="4", var_gatk_tools="Yes",
+                issplitchr="No", trim="Yes")
 
 

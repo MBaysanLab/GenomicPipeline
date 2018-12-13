@@ -3,6 +3,7 @@ import glob
 from log_command import log_command
 from paths import GetPaths
 import helpers
+import pandas as pd
 import shutil
 
 
@@ -48,10 +49,36 @@ class VariantAnnotation(object):
         else:
             return False
 
+    def annovar_custom_txt(self, txt_file, vcf_file):
+        data = []
+        with open(txt_file) as f:
+            columns_ = f.readline()
+            cols = columns_.split("\t")
+            print(cols)
+            for line in f:
+                data.append(line.split("\t"))
+        df = pd.DataFrame(data)
+        cols.append("ess")
+        cols.append("ReadCount")
+        headers = []
+        with open(vcf_file) as f:
+            for line in f:
+                if line[:2] == "##":
+                    print(line)
+                elif line[:6] == "#CHROM":
+                    headers.extend(line.split("\t"))
+                    print(headers)
+
+        cols.extend(headers)
+        df.columns = cols
+        df.head()
+        output_file_name = "Merged_" + ".".join(txt_file.split(".")[:-1])
+        df.to_csv(output_file_name)
+
 
 if __name__ == "__main__":
-    annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=4,
-                            wd="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_38/Bwa/Varscan",
-                            sample_name="S38", will_annotate=["Bowtie2_Mutect2_gatk3_38.vcf"], annotate_all=True)
+    annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=2,
+                            wd="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_40/Bwa/PreProcess",
+                            sample_name="S40", will_annotate=["INDEL_Varscan_Bwa_40_Cov8.vcf"], annotate_all=False)
 
     annotate.run_annotation()

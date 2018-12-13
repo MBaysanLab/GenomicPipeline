@@ -79,9 +79,7 @@ def get_info(sample_type, fastq_list, trimmed=False):
 def create_folder(working_directory, all_files, map_type=None, step="Other", folder_directory=None):
     if step == "Mapping":
         all_files.append("log_file.txt")
-        mk_dir = working_directory + "/" + map_type
-        os.mkdir(mk_dir)
-        mk_dir += "/" + step
+        mk_dir = folder_directory + "/" + step
         os.mkdir(mk_dir)
         for file in all_files:
             if file[-2:] != "gz":
@@ -89,7 +87,9 @@ def create_folder(working_directory, all_files, map_type=None, step="Other", fol
                 shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
     elif step == "QC":
         all_files.append("log_file.txt")
-        mk_dir = working_directory + "/" + step
+        mk_dir = working_directory + "/" + map_type
+        os.mkdir(mk_dir)
+        mk_dir += "/" + step
         os.mkdir(mk_dir)
         for file in all_files:
             shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
@@ -114,6 +114,7 @@ def create_index(lastbam, function, threads, step):
     log_command(indexcol, function, threads, step)
     return lastbam[:-3] + "bai"
 
+
 def get_sample_name(bamfile):
     command = "samtools view -H " + bamfile
     cmd = command.split(" ")
@@ -135,3 +136,5 @@ def get_sample_name(bamfile):
         return False
 
 
+def delete_file_custom(file):
+    return True
