@@ -17,7 +17,8 @@ class GatkPreProcessing(object):
         self.sample_type = sample_type
         self.library_matching_id = library_matching_id
         self.threads = thrds
-        self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"
+        self.bundle_dir = self.get_paths.ref_dir
+        # self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"
         self.file_list = []
         os.chdir(self.working_directory)
 
@@ -72,15 +73,16 @@ class GatkPreProcessing(object):
         recal_table = str(lastbam).split(".")[0] + "_RECAL.table"
 
         bcal = self.get_paths.gatk4_path + " BaseRecalibrator -R " + self.bundle_dir +\
-               "/ucsc.hg19.fasta -I " + lastbam + " --known-sites " + self.get_paths.mills_indel +\
-               " --known-sites " + self.get_paths.dbsnp + " -O " + recal_table
+               "Homo_sapiens_assembly38.fasta -I " + lastbam + " --known-sites " + self.get_paths.mills_indel +\
+               " --known-sites " + self.get_paths.dbsnp + " --known-sites " + self.get_paths.one_thousand_g + " -O " +\
+               recal_table
         log_command(bcal, "Base Recalibrator", self.threads, "Gatk4PreProcessing")
         self.file_list.append(recal_table)
         return recal_table
 
     def gatk4_applybsqr(self, lastbam, recaltable):
         afterbqsrbam = "GATK4_" + lastbam
-        apply_command = self.get_paths.gatk4_path + " ApplyBQSR -R " + self.bundle_dir + "/ucsc.hg19.fasta -I " + \
+        apply_command = self.get_paths.gatk4_path + " ApplyBQSR -R " + self.bundle_dir + "Homo_sapiens_assembly38.fasta -I " + \
                         lastbam + " --bqsr-recal-file " + recaltable + " -O " + afterbqsrbam
         log_command(apply_command, "ApplyBQSR", self.threads, "Gatk4PreProcessing")
         self.file_list.append(afterbqsrbam)
@@ -104,17 +106,17 @@ class GatkPreProcessing(object):
 
 
 if __name__ == "__main__":
-    os.chdir("/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_40/Bowtie2/PreProcess")
+    os.chdir("/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01/Bwa/PreProcess")
     print(os.getcwd())
     after_markdpl_file = glob.glob("MDUP_*.bam")
     print(after_markdpl_file)
     gatk_file_list = []
     for file in after_markdpl_file:
         gatk_pre_processing_step = GatkPreProcessing(
-            working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU_1/Sample_40",
-            map_type="Bowtie2", sample_type="Germline", library_matching_id="1", thrds="7")
+            working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01",
+            map_type="Bwa", sample_type="Germline", library_matching_id="203", thrds="2")
 
-        return_files = gatk_pre_processing_step.run_gatks3(file)
+        return_files = gatk_pre_processing_step.run_gatks4(file)
         print(return_files)
         gatk_file_list.append(return_files)
         print(gatk_file_list)

@@ -65,8 +65,8 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
 
 
 if __name__ == "__main__":
-    callmapping(working_directory="/home/bioinformaticslab/Desktop/AMBRY/Sample_NOB01_GermlineDNA",
-                var_maptype="Bwa", var_sampletype="Tumor", library="923", threads="4", var_gatk_tools="Yes",
-                issplitchr="No", trim="Yes")
+    callmapping(working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01",
+                var_maptype="Bowtie2", var_sampletype="Tumor", library="203", threads="1", var_gatk_tools="Yes",
+                issplitchr="No", trim="No")
 
 

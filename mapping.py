@@ -76,7 +76,8 @@ class Mapping(object):
         self.sample_type = sample_type
         self.library_matching_id = library_matching_id
         self.threads = str(thrds)  # in case of given as integer it convert to string
-        self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"  # contains reference bundle
+        #self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"  # contains reference bundle
+        self.bundle_dir = self.get_paths.ref_dir  # contains reference bundle
         if trim == "Yes":
             self.trim = True
             self.folder_directory = self.working_directory + "/" + map_type
@@ -85,6 +86,7 @@ class Mapping(object):
             self.trim = False
             self.folder_directory = self.working_directory
         self.file_list = []
+        self.delete_file_list = []
         os.chdir(self.working_directory)
 
     def mapping(self):
@@ -143,7 +145,7 @@ class Mapping(object):
                                      RG_PL + '\\tPU:' + RG_PU + '" '  # Read group created and will bed added bam file
 
                     map_bam = "bwa mem -t " + self.threads + " " + add_read_group + self.get_paths.ref_dir + \
-                              "Bwa/ucsc.hg19.fasta " + read1[0] + " " + read2[0] + \
+                              "Bwa/Homo_sapiens_assembly38.fasta " + read1[0] + " " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
                     print("mapping =>" + map_bam)
                 elif self.map_type == "Bowtie2":  # If selected algorithm is Bowtie2
@@ -152,7 +154,7 @@ class Mapping(object):
                                      RG_PL + " --rg PU:" + RG_PU  # Read group created and will bed added bam file
 
                     map_bam = "bowtie2 -p" + self.threads + add_read_group + " -x " + self.get_paths.ref_dir + \
-                              "Bowtie2/hg_19_bowtie2 -1 " + read1[0] + " -2 " + read2[0] + \
+                              "Bowtie2/Homo_sapiens_assembly38 -1 " + read1[0] + " -2 " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
                     print("mapping =>" + map_bam)
                 else:

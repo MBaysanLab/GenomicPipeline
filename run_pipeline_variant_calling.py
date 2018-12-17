@@ -39,8 +39,8 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
     return pipeline2_success
 
 
-call_variant_caller(var_variantcaller="Mutect2", threads_p=3, var_maptype="Bwa",
-                    germline_bam="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_46/Bowtie2/PreProcess/GATK4_MDUP_Bowtie2_46_MergedBAM.bam",
-                    working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/pipeline_old_versions/Genomics_Pipeline_Test/test_files/Bwa/PreProcess",
-                    tumor_bam="GATK4_MDUP_Bwa_NB17_MergedBAM.bam", s_name="NB17", tumor_only="Yes")
+# call_variant_caller(var_variantcaller="Mutect2", threads_p=3, var_maptype="Bwa",
+#                     germline_bam="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_40/Bwa/PreProcess/GATK4_MDUP_Bwa_40_MergedBAM.bam",
+#                     working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_37",
+#                     tumor_bam="GATK4_MDUP_Bwa_37_MergedBAM.bam", s_name="S37", tumor_only="No")
 
