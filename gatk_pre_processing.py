@@ -101,7 +101,7 @@ class GatkPreProcessing(object):
     def run_gatks4(self, after_markdpl):
         basequality = self.gatk4_base_recalibrator(after_markdpl)
         self.gatk4_applybsqr(after_markdpl, basequality)
-        gatk_files = glob.glob("GATK_*.bam")
+        gatk_files = glob.glob("GATK4_*bam")
         return gatk_files
 
 

@@ -21,7 +21,7 @@ class VariantAnnotation(object):
             self.annotate_files = glob.glob("*.vcf")
         else:
             self.annotate_files = will_annotate
-        self.humandb = self.get_paths.annovar + "humandb/"
+        self.humandb = self.get_paths.annovar + "humandb_38/"
         self.xref = self.get_paths.annovar + "example/gene_fullxref.txt"
         self.annovar_dir = self.get_paths.annovar + "table_annovar.pl"
         self.file_list = []
@@ -38,8 +38,12 @@ class VariantAnnotation(object):
                 output_f = "Annovar_" + "_".join(input_f.split(".")[:-1])
                 output_file = self.working_directory + "/" + output_f
                 command = self.annovar_dir + " --vcfinput " + input_file + " " + self.humandb + \
-                          " -buildver hg19 -out " + output_file + " -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f " \
-                          "-nastring . -polish -xreffile " + self.xref
+                          " -buildver hg38 -out " + output_file + " -remove -protocol refGene,ensGene,knownGene," \
+                                                                 "cytoBand" \
+                                                                  ",exac03,avsnp150,dbnsfp35c,gme,gnomad_exome," \
+                                                                  "clinvar_20180603,cosmic -operation " \
+                                                                  "gx,gx,gx,r,f,f,f,f,f,f,f -nastring . -polish " \
+                                                                  "-xreffile " + self.xref
                 print(command)
                 log_command(command, "Annovar", self.threads, "Variant Annotation")
                 output_fs = glob.glob("*" + output_f + "*")

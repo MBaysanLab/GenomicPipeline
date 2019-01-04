@@ -54,7 +54,7 @@ class VariantCall(object):
         self.map_type = map_type
         self.output_name = self.map_type + "_" + self.v_caller + "_" + sample_name
         self.threads = str(thrds)
-        self.ref_dir = self.get_paths.ref_dir + "hg19_bundle/ucsc.hg19.fasta"   # contains reference files
+        self.ref_dir = self.get_paths.ref_dir + "Homo_sapiens_assembly38.fasta"   # contains reference files
         self.tumor_bam = tumor_bam
         self.germline_bam = germline_bam
         if tumor_only == "Yes":

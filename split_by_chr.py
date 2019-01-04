@@ -9,7 +9,8 @@ def split_bam_by_chr(file):
               "for chrom in `seq 1 22` X Y; do " \
               "samtools view -bh $file chr${chrom} > ${filename}_Chr_${chrom}.bam; done; done"
     print(split_command)
-    log_command(split_command, "split by chrommose", 0)
+
+    log_command(split_command, "split by chrommose", "0", "PreProcessing")
     all_chr_files = glob.glob("*_Chr_*.bam")
     return all_chr_files
 

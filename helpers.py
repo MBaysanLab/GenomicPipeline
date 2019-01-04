@@ -76,43 +76,39 @@ def get_info(sample_type, fastq_list, trimmed=False):
         print("raise error and ask again for a valid sample type")
 
 
-def create_folder(working_directory, all_files, map_type=None, step="Other", folder_directory=None):
+
+
+def create_folder(working_directory, all_files, map_type=None, step="Other", folder_directory=None, master_step=False):
+    all_files.append("log_file.txt")
     all_files_set = set(all_files)
-    if step == "Mapping":
-        all_files.append("log_file.txt")
-        mk_dir = folder_directory + "/" + step
+    if step == "QC":
+        mk_dir = working_directory + "/" + step
         os.mkdir(mk_dir)
-        for file in all_files:
-            if file[-2:] != "gz":
-                print("mapping crate folder print " + file)
-                shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
-    elif step == "QC":
-        all_files.append("log_file.txt")
-        mk_dir = working_directory + "/" + map_type
+        for file in all_files_set:
+            shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
+    elif step == "Mapping":
+        mk_dir = folder_directory + "/" + map_type
         os.mkdir(mk_dir)
         mk_dir += "/" + step
         os.mkdir(mk_dir)
-        for file in all_files:
-            shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
-    elif step == "Other":
-        all_files.append("log_file.txt")
-        mk_dir = working_directory + "/" + step
-        os.mkdir(mk_dir)
-        for file in all_files:
-            shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
+        for file in all_files_set:
+            if file[-2:] != "gz":
+                shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
     else:
-        all_files_set.add("log_file.txt")
         mk_dir = folder_directory + "/" + step
         os.mkdir(mk_dir)
         for file in all_files_set:
-            if file[-2:] != "gz":
-                print("preprocess crate folder print " + file)
-                shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
+            shutil.move(working_directory + "/" + file, mk_dir + "/" + file)
 
 
-def delete_files_from_folder(file_list):
-    for file in file_list:
-        if os.path.exists(file):
+def delete_files_from_folder(working_directory, map_type, step, file_list):
+    os.chdir(working_directory + "/" + map_type + "/" + step)
+    file_list_extend = [f.split(".")[0] + ".bai" for f in file_list]
+    file_list_extend.extend(file_list)
+    all_files = glob.glob("*")
+    file_list_extend.append("log_file.txt")
+    for file in all_files:
+        if os.path.exists(file) and (file not in file_list_extend):
             os.remove(file)
         else:
             pass

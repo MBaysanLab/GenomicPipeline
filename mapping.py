@@ -78,13 +78,12 @@ class Mapping(object):
         self.threads = str(thrds)  # in case of given as integer it convert to string
         #self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"  # contains reference bundle
         self.bundle_dir = self.get_paths.ref_dir  # contains reference bundle
+        self.folder_directory = self.working_directory
         if trim == "Yes":
             self.trim = True
-            self.folder_directory = self.working_directory + "/" + map_type
-            self.working_directory = self.working_directory + "/" + map_type + "/QC"
+            self.working_directory = self.working_directory + "/QC"
         else:
             self.trim = False
-            self.folder_directory = self.working_directory
         self.file_list = []
         self.delete_file_list = []
         os.chdir(self.working_directory)
@@ -166,7 +165,7 @@ class Mapping(object):
                 self.file_list.append(gene_origin)  # Output file's name added to list
                 self.convert_sort(gene_origin)  # Each output bam file sorted and indexed with this function
 
-        all_sortedbam_files = glob.glob("SortedBAM*.bam")  # Get all sorted bam files
+        all_sortedbam_files = glob.glob("SortedBAM*bam")  # Get all sorted bam files
 
         # Below helper function get working directory, list of files created in this step, maping type and step's name
         # in order to create folder for that particular step inside base on mapping file
