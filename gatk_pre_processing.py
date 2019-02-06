@@ -105,18 +105,18 @@ class GatkPreProcessing(object):
         return gatk_files
 
 
-if __name__ == "__main__":
-    os.chdir("/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01/Bwa/PreProcess")
-    print(os.getcwd())
-    after_markdpl_file = glob.glob("MDUP_*.bam")
-    print(after_markdpl_file)
-    gatk_file_list = []
-    for file in after_markdpl_file:
-        gatk_pre_processing_step = GatkPreProcessing(
-            working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01",
-            map_type="Bwa", sample_type="Germline", library_matching_id="203", thrds="2")
-
-        return_files = gatk_pre_processing_step.run_gatks4(file)
-        print(return_files)
-        gatk_file_list.append(return_files)
-        print(gatk_file_list)
+# if __name__ == "__main__":
+#     os.chdir("/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01/Bwa/PreProcess")
+#     print(os.getcwd())
+#     after_markdpl_file = glob.glob("MDUP_*.bam")
+#     print(after_markdpl_file)
+#     gatk_file_list = []
+#     for file in after_markdpl_file:
+#         gatk_pre_processing_step = GatkPreProcessing(
+#             working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NOB01",
+#             map_type="Bwa", sample_type="Germline", library_matching_id="203", thrds="2")
+#
+#         return_files = gatk_pre_processing_step.run_gatks4(file)
+#         print(return_files)
+#         gatk_file_list.append(return_files)
+#         print(gatk_file_list)

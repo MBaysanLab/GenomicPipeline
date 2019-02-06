@@ -30,7 +30,7 @@ def get_bam_by_chr():
             chr_list[chr_a].append(chr_files)
     return chr_list
 
-#get_list = split_bam_by_chr("test_files/NB17_last_Bwa.bam")
+# get_list = split_bam_by_chr("/home/selcuk/Desktop/bed_files/38/sahin/capture38.bed")
 
 # os.chdir("/home/bioinformaticslab/Desktop/GitHub_Repos/Genomics_Pipeline_Test/test_files/Bwa/PreProcess")
 # get_list = get_bam_by_chr()

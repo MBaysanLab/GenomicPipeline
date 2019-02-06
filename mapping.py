@@ -143,7 +143,7 @@ class Mapping(object):
                     add_read_group = ' -R "@RG\\tID:' + RG_ID + '\\tSM:' + RG_SM + '\\tLB:' + RG_LB + '\\tPL:' + \
                                      RG_PL + '\\tPU:' + RG_PU + '" '  # Read group created and will bed added bam file
 
-                    map_bam = "bwa mem -t " + self.threads + " " + add_read_group + self.get_paths.ref_dir + \
+                    map_bam = "/home/selcuk/Desktop/bwa/bwa mem -t " + self.threads + " " + add_read_group + self.get_paths.ref_dir + \
                               "Bwa/Homo_sapiens_assembly38.fasta " + read1[0] + " " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
                     print("mapping =>" + map_bam)
@@ -152,7 +152,7 @@ class Mapping(object):
                     add_read_group = " --rg-id " + RG_ID + " --rg SM:" + RG_SM + " --rg LB:" + RG_LB + " --rg PL:" + \
                                      RG_PL + " --rg PU:" + RG_PU  # Read group created and will bed added bam file
 
-                    map_bam = "bowtie2 -p" + self.threads + add_read_group + " -x " + self.get_paths.ref_dir + \
+                    map_bam = "/home/selcuk/Desktop/bowtie2/bowtie2 -p" + self.threads + add_read_group + " -x " + self.get_paths.ref_dir + \
                               "Bowtie2/Homo_sapiens_assembly38 -1 " + read1[0] + " -2 " + read2[0] + \
                               " | samtools view -@" + self.threads + " -bS - > " + gene_origin
                     print("mapping =>" + map_bam)

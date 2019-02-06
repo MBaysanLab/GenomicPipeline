@@ -81,8 +81,8 @@ def annovar_custom_txt(txt_file, vcf_file):
 
 
 if __name__ == "__main__":
-    annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=6,
-                            wd="/home/bioinformaticslab/Desktop/GitHub_Repos/test_files/NB17/Bwa/Varscan",
-                            sample_name="NB17", will_annotate=["INDEL_Varscan_Bwa_40_Cov8.vcf"], annotate_all=True)
+    annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=4,
+                            wd="/media/selcuk/a58b0f32-9a6f-41f5-b0b2-ff63351982fd/txts/40",
+                            sample_name="S40", will_annotate=["INDEL_Varscan_Bwa_40_Cov8.vcf"], annotate_all=True)
 
     annotate.run_annotation()
