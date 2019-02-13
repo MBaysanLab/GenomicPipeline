@@ -83,8 +83,6 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
 
 
 if __name__ == "__main__":
-    callmapping(working_directory="/media/selcuk/76d7b657-24d7-4be9-8630-dc7cdc3a34f3/DUYGU_Files/Sample_39/",
-                var_maptype="Bwa", var_sampletype="Tumor", library="1", threads="1", var_gatk_tools="Yes",
+    callmapping(working_directory="/home/sahin/Desktop/test/",
+                var_maptype="Bowtie2", var_sampletype="Tumor", library="1", threads="1", var_gatk_tools="Yes",
                 issplitchr="No", trim="No", middle_files="No")
-
-
