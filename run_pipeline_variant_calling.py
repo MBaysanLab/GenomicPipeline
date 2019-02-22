@@ -1,5 +1,6 @@
 import variant_calling
 import variant_annotation
+import split_by_chr as chr
 
 
 def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype, var_variantcaller, threads_p,
@@ -18,6 +19,10 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
 
     if gm[-1] == "/" or gm[-1] == "\\":
         gm = gm[:-1]
+
+    tumor_chr_files = chr.split_bam_by_chr(wd + "/" + tumor_bam)
+
+    normal_chr_files = chr.split_bam_by_chr(germline_bam)
 
     if var_variantcaller == "Mutect2" or var_variantcaller == "Mutect2_gatk3":
         pipeline2 = variant_calling.VariantCall(variant_caller=var_variantcaller, thrds=threads_p, map_type=var_maptype,
@@ -39,8 +44,9 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
     return pipeline2_success
 
 
-# call_variant_caller(var_variantcaller="Mutect2", threads_p=3, var_maptype="Bwa",
-#                     germline_bam="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_40/Bwa/PreProcess/GATK4_MDUP_Bwa_40_MergedBAM.bam",
-#                     working_directory="/home/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_37",
-#                     tumor_bam="GATK4_MDUP_Bwa_37_MergedBAM.bam", s_name="S37", tumor_only="No")
+if __name__ == "__main__":
+    call_variant_caller(var_variantcaller="Mutect2", threads_p=4, var_maptype="Bwa",
+                        germline_bam="/home/bioinformaticslab/Desktop/bioinformaticslab/Desktop/AMBRY/DUYGU/Sample_40/Bwa/PreProcess/GATK4_MDUP_Bwa_40_MergedBAM.bam",
+                        working_directory="/home/bioinformaticslab/Desktop/testData/Bwa_origin/PreProcess",
+                        tumor_bam="GATK4_MDUP_Bwa_37_MergedBAM.bam", s_name="S37", tumor_only="No")
 

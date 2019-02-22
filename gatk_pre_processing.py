@@ -71,7 +71,6 @@ class GatkPreProcessing(object):
 
     def gatk4_base_recalibrator(self, lastbam):
         recal_table = str(lastbam).split(".")[0] + "_RECAL.table"
-
         bcal = self.get_paths.gatk4_path + " BaseRecalibrator -R " + self.bundle_dir +\
                "Homo_sapiens_assembly38.fasta -I " + lastbam + " --known-sites " + self.get_paths.mills_indel +\
                " --known-sites " + self.get_paths.dbsnp + " --known-sites " + self.get_paths.one_thousand_g + " -O " +\
