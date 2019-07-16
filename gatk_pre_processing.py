@@ -1,9 +1,8 @@
 import os
 import glob
-from log_command import log_command
+from utils.log_command import log_command
 from paths import GetPaths
-import helpers
-import shutil
+from utils import helpers
 
 
 class GatkPreProcessing(object):
@@ -71,6 +70,7 @@ class GatkPreProcessing(object):
 
     def gatk4_base_recalibrator(self, lastbam):
         recal_table = str(lastbam).split(".")[0] + "_RECAL.table"
+
         bcal = self.get_paths.gatk4_path + " BaseRecalibrator -R " + self.bundle_dir +\
                "Homo_sapiens_assembly38.fasta -I " + lastbam + " --known-sites " + self.get_paths.mills_indel +\
                " --known-sites " + self.get_paths.dbsnp + " --known-sites " + self.get_paths.one_thousand_g + " -O " +\

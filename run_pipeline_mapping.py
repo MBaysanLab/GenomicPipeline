@@ -2,10 +2,8 @@ import mapping
 import pre_processing
 import gatk_pre_processing
 import qc_trim
-import helpers
+from utils import helpers
 import os
-import split_by_chr as chr
-from glob import glob
 
 
 def callmapping(var_maptype, var_sampletype, working_directory, library, threads, var_gatk_tools, issplitchr, trim,
@@ -42,7 +40,7 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
                                    thrds=th, trim=tr)
 
     mapping_files = mapping_step.mapping()
-    #mapping_files = ["SortedBAM_Bwa_37_CGATGT_L005_001.bam"]
+    #mapping_files = ["SortedBAM_Bwa_NOB01_AACGTGA_L001_001.bam"]
 
     if not mdf_keep:
         helpers.delete_files_from_folder(wd, mt, "Mapping", mapping_files)
@@ -58,21 +56,14 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
     if gt == "Yes":
         if issplitchr != "No":
             mark_duplicate_file = pre_processing_step.pre_process(info_dict, mapping_files)
-
-            gatk_pre_processing_step = gatk_pre_processing.GatkPreProcessing(working_directory=wd, map_type=mt,
-                                                                             sample_type=st, library_matching_id=lb,
-                                                                             thrds=th)
-            all_chr_files = chr.split_bam_by_chr(mark_duplicate_file)
-            #all_chr_files = glob("*_Chr_*")
-            for file in all_chr_files:
+            for file in mark_duplicate_file:
+                gatk_pre_processing_step = gatk_pre_processing.GatkPreProcessing(working_directory=wd, map_type=mt,
+                                                                                 sample_type=st, library_matching_id=lb,
+                                                                                 thrds=th)
                 return_files = gatk_pre_processing_step.run_gatks4(file)
-                #print(return_files)
+                print(return_files)
                 gatk_file_list.append(return_files)
-
-            print(gatk_file_list)
-            merged_file = pre_processing_step.merge_bams(info_dict, gatk_file_list)
-            if not mdf_keep:
-                helpers.delete_files_from_folder(wd, mt, "PreProcess", merged_file)
+                print(gatk_file_list)
 
         else:
             mark_duplicate_file = pre_processing_step.pre_process(info_dict, mapping_files)
@@ -91,9 +82,9 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
     return True
 
 
-# if __name__ == "__main__":
-#     callmapping(working_directory="/home/bioinformaticslab/Desktop/testData",
-#                 var_maptype="Bwa", var_sampletype="Tumor", library="1", threads="4", var_gatk_tools="Yes",
-#                 issplitchr="Yes", trim="Yes", middle_files="No")
-#
+if __name__ == "__main__":
+    callmapping(working_directory="/home/bioinformaticslab2/Desktop/test_files/Sample_NB09",
+                var_maptype="Bwa", var_sampletype="Tumor", library="1", threads="6", var_gatk_tools="Yes",
+                issplitchr="No", trim="Yes", middle_files="No")
+
 

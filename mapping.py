@@ -1,7 +1,7 @@
 import os
-from log_command import log_command
+from utils.log_command import log_command
 from paths import GetPaths
-import helpers
+from utils import helpers
 import glob
 import re
 import gzip

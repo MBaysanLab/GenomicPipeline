@@ -1,10 +1,9 @@
 import os
 import glob
-from log_command import log_command
+from utils.log_command import log_command
 from paths import GetPaths
-import helpers
+from utils import helpers
 import pandas as pd
-import shutil
 
 
 class VariantAnnotation(object):
@@ -29,6 +28,8 @@ class VariantAnnotation(object):
     def run_annotation(self):
         if self.v_annotater == "Annovar":
             self.annovar_vcf_files(self.annotate_files)
+        elif self.v_annotater == "Strelka":
+            self.annovar_for_strelka(self.annotate_files)
 
     def annovar_vcf_files(self, input_fs):
         print(input_fs)
@@ -41,8 +42,8 @@ class VariantAnnotation(object):
                           " -buildver hg38 -out " + output_file + " -remove -protocol refGene,ensGene,knownGene," \
                                                                  "cytoBand" \
                                                                   ",exac03,avsnp150,dbnsfp35c,gme,gnomad_exome," \
-                                                                  "clinvar_20180603,cosmic -operation " \
-                                                                  "gx,gx,gx,r,f,f,f,f,f,f,f -nastring . -polish " \
+                                                                  "clinvar_20190305,cosmic89_coding,nci60 -operation " \
+                                                                  "gx,gx,gx,r,f,f,f,f,f,f,f,f -nastring . -polish " \
                                                                   "-xreffile " + self.xref
                 print(command)
                 log_command(command, "Annovar", self.threads, "Variant Annotation")
@@ -52,6 +53,34 @@ class VariantAnnotation(object):
                                   folder_directory=self.working_directory)
         else:
             return False
+
+    def annovar_for_strelka(self, input_fs):
+        print(input_fs)
+        if type(input_fs) == list:
+            for input_f in input_fs:
+                input_file = self.working_directory + "/" + input_f
+                header_f = input_f.replace("Strelka", "Strelka2")
+                header_f1 = header_f.replace(".vcf", ".txt")
+                header_output_file = self.working_directory + "/" + header_f1
+                header_remove_comand = 'grep -v "##" ' + input_file + " | awk '" + '{print $1"\\t"$2"\\t"$2"\\t"$4"\\t"$5"\\t"$6"\\t"$7"\\t"$8"\\t"$9"\\t"$10"\\t"$11}' + "' > {}".format(header_output_file)
+                print(header_remove_comand)
+                log_command(header_remove_comand, "Annovar", self.threads, "Variant Annotation Preprocess")
+                output_f = "Annovar_" + "_".join(header_f.split(".")[:-1])
+                output_file = self.working_directory + "/" + output_f
+                command = self.annovar_dir + " " + input_file + " " + self.humandb + \
+                          " -buildver hg38 -out " + output_file + " -remove -protocol refGene,ensGene,knownGene," \
+                                                                  "cytoBand" \
+                                                                  ",exac03,avsnp150,dbnsfp35c,gme,gnomad_exome," \
+                                                                  "clinvar_20180603,cosmic -operation " \
+                                                                  "gx,gx,gx,r,f,f,f,f,f,f,f -nastring . -polish " \
+                                                                  "-xreffile " + self.xref
+                print(command)
+
+
+
+                output_fs = glob.glob("*" + output_f + "*")
+
+
 
 def annovar_custom_txt(txt_file, vcf_file):
     data = []
@@ -80,9 +109,18 @@ def annovar_custom_txt(txt_file, vcf_file):
     df.to_csv(output_file_name)
 
 
+#if __name__ == "__main__":
+#    annotate = VariantAnnotation(variant_annotater="Strelka", thread_v=4,
+#                            wd="/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB02/Bwa/Strelka",
+#                            sample_name="NOB02", will_annotate=[""], annotate_all=True)
+#
+#    annotate.run_annotation()
+
+
+
 if __name__ == "__main__":
     annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=4,
-                            wd="/media/selcuk/a58b0f32-9a6f-41f5-b0b2-ff63351982fd/txts/40",
-                            sample_name="S40", will_annotate=["INDEL_Varscan_Bwa_40_Cov8.vcf"], annotate_all=True)
+                            wd="/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Documents/tree_deneme/t_analysis/germlines/d7e",
+                            sample_name="d7e", will_annotate=["GATK4_MDUP_Bwa_d7E_MergedBAM.raw.snps.indels.vcf"], annotate_all=False)
 
     annotate.run_annotation()
