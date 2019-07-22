@@ -6,8 +6,8 @@ from variant_annotation import VariantAnnotation
 
 
 
-
-# folder_list = [("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB38", "Tumor", "Bwa", "1")
+#################### Mapping Codes #########################
+# folder_list = [("sample_path", "Tumor", "Bwa", "1")
 #                ]
 #
 #
@@ -20,63 +20,14 @@ from variant_annotation import VariantAnnotation
 #################### Variant Calling Codes #########################
 
 
-# folde_list = [("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB0" +str(a) + "/Bwa/PreProcess", "NOB0"+str(a), "Bwa", "Strelka", "GATK4_MDUP_Bwa_NOB0"+str(a) + "_MergedBAM.bam") for a in range(2, 4, 1)]
-# folde_list.append(("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB09/Bwa/PreProcess", "NB09", "Bowa", "Strelka", "GATK4_MDUP_Bwa_NB09_MergedBAM.bam"))
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB0" +str(a) + "/Bowtie2/PreProcess", "NOB0"+str(a), "Bowtie2", "Strelka", "GATK4_MDUP_Bowtie2_NOB0"+str(a) + "_MergedBAM.bam") for a in range(2, 4, 1)])
-# folde_list.append(("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB09/Bowtie2/PreProcess", "NB09", "Bowtie2", "Strelka", "GATK4_MDUP_Bowtie2_NB09_MergedBAM.bam"))
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB"+str(a) + "/Bowtie2/PreProcess", "NB"+str(a), "Bowtie2", "Strelka", "GATK4_MDUP_Bowtie2_NB"+str(a) + "_MergedBAM.bam") for a in range(10, 33, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bowtie2/PreProcess", "NOB"+str(a), "Bowtie2", "Strelka", "GATK4_MDUP_Bowtie2_NOB"+str(a) + "_MergedBAM.bam") for a in range(33, 45, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bowtie2/PreProcess", "NOB"+str(a), "Bowtie2", "Strelka", "GATK4_MDUP_Bowtie2_NOB"+str(a) + "_MergedBAM.bam") for a in range(61, 69, 1)])
-
-# print(folde_list)
-# #
-# # # for k in range(03, 33, 1):
-# # #     folde_list.append(("/home/bioinformaticslab/Desktop/bioinformaticslab/Desktop/AMBRY/203/Sample_NB" + str(k) + "/Bowtie2/PreProcess", "NB" + str(k), "Bowtie2", "Mutect2", "GATK4_MDUP_Bowtie2_NB"+str(k)+"_MergedBAM.bam"))
-# # #     folde_list.append(("/home/bioinformaticslab/Desktop/bioinformaticslab/Desktop/AMBRY/203/Sample_NB" + str(k) + "/Bowtie2/PreProcess", "NB" + str(k), "Bowtie2", "Varscan", "GATK4_MDUP_Bowtie2_NB" + str(k) + "_MergedBAM.bam"))
-# #
-# # print(folde_list)
-# #
-# #
+# folde_list = [("TumorBamFileFolderPath", "SampleName", "Bwa", "Strelka", "TumorBamFile")]
 # for folder, s_name, map_type, caller, bam in folde_list:
 #
 #     if map_type == "Bwa":
-#         gm = "/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB01_GermlineDNA/Bwa/PreProcess/GATK4_MDUP_Bwa_NOB01_MergedBAM.bam"
+#         gm = "GermlineBamFilePathForBwa"
 #     else:
-#         gm = "/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB01_GermlineDNA/Bowtie2/PreProcess/GATK4_MDUP_Bowtie2_NOB01_MergedBAM.bam"
+#         gm = "GermlineBamFilePathForOther"
 #     call_variant_caller(var_variantcaller=caller, threads_p=4, var_maptype=map_type,
 #                         germline_bam=gm,
 #                         working_directory=folder,
 #                         tumor_bam=bam, s_name=s_name, tumor_only="No")
-
-
-#################### Annotation Codes #########################
-
-folde_list = []
-
-folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB0" +str(a) + "/Bwa", "NOB0"+str(a)) for a in range(2, 3, 1)])
-# folde_list.append(("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB09/Bwa", "NB09"))
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB"+str(a) + "/Bwa", "NB"+str(a)) for a in range(10, 33, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bwa", "NOB"+str(a)) for a in range(33, 45, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bwa", "NOB"+str(a)) for a in range(61, 69, 1)])
-#
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB0" +str(a) + "/Bowtie2", "NOB0"+str(a)) for a in range(2, 9, 1)])
-# folde_list.append(("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB09/Bowtie2", "NB09"))
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NB"+str(a) + "/Bowtie2", "NB"+str(a)) for a in range(10, 33, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bowtie2", "NOB"+str(a)) for a in range(33, 45, 1)])
-# folde_list.extend([("/media/bioinformaticslab/369ca485-b3f2-4f04-bbfb-8657aad7669e/bioinformaticslab/Desktop/AMBRY/203/Sample_NOB" +str(a) + "/Bowtie2", "NOB"+str(a)) for a in range(61, 69, 1)])
-#
-
-
-for folder, s_name in folde_list:
-    f_strelka = folder + "/Strelka"
-    #f_varscan= folder + "/Varscan"
-
-    # annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=6, wd=f_mutect, sample_name=s_name,
-    #                              will_annotate=[""], annotate_all=True)
-    #
-    # #annotate.run_annotation()
-    annotate = VariantAnnotation(variant_annotater="Annovar", thread_v=6, wd=f_strelka, sample_name=s_name,
-                                 will_annotate=[""], annotate_all=True)
-
-    annotate.run_annotation()
-
