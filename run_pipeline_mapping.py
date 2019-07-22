@@ -83,7 +83,7 @@ def callmapping(var_maptype, var_sampletype, working_directory, library, threads
 
 
 if __name__ == "__main__":
-    callmapping(working_directory="/home/bioinformaticslab2/Desktop/test_files/Sample_NB09",
+    callmapping(working_directory="folderpath",
                 var_maptype="Bwa", var_sampletype="Tumor", library="1", threads="6", var_gatk_tools="Yes",
                 issplitchr="No", trim="Yes", middle_files="No")
 
