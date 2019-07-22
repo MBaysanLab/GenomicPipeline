@@ -38,7 +38,7 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
 
 
 call_variant_caller(var_variantcaller="Mutect2", threads_p=4, var_maptype="Bowtie2",
-                    germline_bam="/home/bioinformaticslab2/Desktop/Ambry/test_files/NOB01/Bowtie2/PreProcess/GATK4_MDUP_Bowtie2_NOB01_MergedBAM.bam",
-                    working_directory="/home/bioinformaticslab2/Desktop/Ambry/test_files/NB09/Bowtie2/PreProcess",
-                    tumor_bam="GATK4_MDUP_Bowtie2_NB09_MergedBAM.bam", s_name="NB09", tumor_only="No")
+                    germline_bam="GermlineBamFilePath",
+                    working_directory="TumorFileFolderPath",
+                    tumor_bam="TumorFile.bam", s_name="SampleName", tumor_only="No")
 
