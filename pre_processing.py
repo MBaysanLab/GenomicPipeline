@@ -148,7 +148,7 @@ class PreProcessing(object):
 
 
 # if __name__ == "__main__":
-#     pre_processing_step = PreProcessing(working_directory="/home/bioinformaticslab/Desktop/GitHub_Repos/Genomics_Pipeline_Test/test_files",
+#     pre_processing_step = PreProcessing(working_directory="bamfilefolderpath",
 #                            map_type="Bwa", sample_type="Tumor", library_matching_id="203", thrds="1", issplitchr="Before")
 #
 #     mapping_step = mapping.Mapping(working_directory=pre_processing_step.main_directory,
