@@ -1,8 +1,9 @@
-import os
 import glob
+import os
+
+import helpers
 from log_command import log_command
 from paths import GetPaths
-import helpers
 
 
 class VariantCall(object):
@@ -40,8 +41,19 @@ class VariantCall(object):
 
     """
 
-    def __init__(self, variant_caller, thrds, map_type, germline_bam, wd, tumor_bam, sample_name, tumor_only,
-                 tumor_interval=None, germline_interval=None):
+    def __init__(
+        self,
+        variant_caller,
+        thrds,
+        map_type,
+        germline_bam,
+        wd,
+        tumor_bam,
+        sample_name,
+        tumor_only,
+        tumor_interval=None,
+        germline_interval=None,
+    ):
 
         self.get_paths = GetPaths()  # Get paths of algorithms inside paths.py module
         self.working_directory = wd
@@ -54,7 +66,9 @@ class VariantCall(object):
         self.map_type = map_type
         self.output_name = self.map_type + "_" + self.v_caller + "_" + sample_name
         self.threads = str(thrds)
-        self.ref_dir = self.get_paths.ref_dir + "hg19_bundle/ucsc.hg19.fasta"   # contains reference files
+        self.ref_dir = (
+            self.get_paths.ref_dir + "hg19_bundle/ucsc.hg19.fasta"
+        )  # contains reference files
         self.tumor_bam = tumor_bam
         self.germline_bam = germline_bam
         if tumor_only == "Yes":
@@ -74,29 +88,49 @@ class VariantCall(object):
             if self.v_caller == "Mutect2":
                 self.mutect_tumor_only()
                 files = glob.glob("*.vcf*")
-                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2",
-                                      folder_directory=self.folder_directory)
+                helpers.create_folder(
+                    self.working_directory,
+                    files,
+                    map_type=self.map_type,
+                    step="Mutect2",
+                    folder_directory=self.folder_directory,
+                )
                 return self.folder_directory + "/" + "Mutect2"
         else:  # Tumor and Germline bam
             if self.v_caller == "Mutect2":
                 self.mutect_caller()
                 files = glob.glob("*.vcf*")
-                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2",
-                                      folder_directory=self.folder_directory)
+                helpers.create_folder(
+                    self.working_directory,
+                    files,
+                    map_type=self.map_type,
+                    step="Mutect2",
+                    folder_directory=self.folder_directory,
+                )
                 return self.folder_directory + "/" + "Mutect2"
 
             elif self.v_caller == "Varscan":
                 self.varscan_caller()
                 files = glob.glob("*.vcf*")
-                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Varscan",
-                                      folder_directory=self.folder_directory)
+                helpers.create_folder(
+                    self.working_directory,
+                    files,
+                    map_type=self.map_type,
+                    step="Varscan",
+                    folder_directory=self.folder_directory,
+                )
                 return self.folder_directory + "/" + "Varscan"
 
             elif self.v_caller == "Mutect2_gatk3":
                 self.mutect_caller_gatk3()
                 files = glob.glob("*.vcf*")
-                helpers.create_folder(self.working_directory, files, map_type=self.map_type, step="Mutect2_GATK3",
-                                      folder_directory=self.folder_directory)
+                helpers.create_folder(
+                    self.working_directory,
+                    files,
+                    map_type=self.map_type,
+                    step="Mutect2_GATK3",
+                    folder_directory=self.folder_directory,
+                )
                 return self.folder_directory + "/" + "Mutect2_GATK3"
 
             elif self.v_caller == "Strelka":
@@ -106,39 +140,89 @@ class VariantCall(object):
         return False
 
     def mutect_caller_gatk3(self):
-        mutect_output = self.working_directory + "/" + self.output_name  # Prepare output name
+        mutect_output = (
+            self.working_directory + "/" + self.output_name
+        )  # Prepare output name
         nct = " -nct " + self.threads
         # Prepare the mutect variant caller command
-        command = "java -jar " + self.get_paths.gatk_path + " -T MuTect2 " + nct + " -R " + self.ref_dir + \
-                  " -I:tumor " + self.tumor_bam + " -I:normal " + self.germline_bam + \
-                  " -o " + mutect_output
+        command = (
+            "java -jar "
+            + self.get_paths.gatk_path
+            + " -T MuTect2 "
+            + nct
+            + " -R "
+            + self.ref_dir
+            + " -I:tumor "
+            + self.tumor_bam
+            + " -I:normal "
+            + self.germline_bam
+            + " -o "
+            + mutect_output
+        )
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling")  # "log_command" function run the command in terminal
+        log_command(
+            command, "Mutect2", self.threads, "Variant Calling"
+        )  # "log_command" function run the command in terminal
 
     def mutect_caller(self):
-        mutect_output = self.working_directory + "/" + self.output_name + ".vcf"  # Prepare output name
+        mutect_output = (
+            self.working_directory + "/" + self.output_name + ".vcf"
+        )  # Prepare output name
 
         # "helpers.get_sample_name" function get sample names which is inside read group of bam file
         normal_s_name = helpers.get_sample_name(self.germline_bam)
         tumor_s_name = helpers.get_sample_name(self.tumor_bam)
         print(tumor_s_name)
         # Prepare the mutect variant caller command
-        command = self.get_paths.gatk4_path + " Mutect2 " + " -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor "\
-                  + tumor_s_name + " -I " + self.germline_bam + " -normal " + normal_s_name + " -O " + mutect_output
+        command = (
+            self.get_paths.gatk4_path
+            + " Mutect2 "
+            + " -R "
+            + self.ref_dir
+            + " -I "
+            + self.tumor_bam
+            + " -tumor "
+            + tumor_s_name
+            + " -I "
+            + self.germline_bam
+            + " -normal "
+            + normal_s_name
+            + " -O "
+            + mutect_output
+        )
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling")  # "log_command" function run the command in terminal
-        self.mutect_select_variant(mutect_output)  # Separate variants to the SNPs and INDELs file
+        log_command(
+            command, "Mutect2", self.threads, "Variant Calling"
+        )  # "log_command" function run the command in terminal
+        self.mutect_select_variant(
+            mutect_output
+        )  # Separate variants to the SNPs and INDELs file
 
     def mutect_tumor_only(self):
-        mutect_output = self.working_directory + "/" + "TumorOnly_" + self.output_name + ".vcf"  # Prepare output name
+        mutect_output = (
+            self.working_directory + "/" + "TumorOnly_" + self.output_name + ".vcf"
+        )  # Prepare output name
         # "helpers.get_sample_name" function get sample names which is inside read group of bam file
         tumor_s_name = helpers.get_sample_name(self.tumor_bam)
         # Prepare the mutect variant caller command
-        command = self.get_paths.gatk4_path + " Mutect2 -R " + self.ref_dir + " -I " + self.tumor_bam + " -tumor " + \
-                  tumor_s_name + " -O " + mutect_output
+        command = (
+            self.get_paths.gatk4_path
+            + " Mutect2 -R "
+            + self.ref_dir
+            + " -I "
+            + self.tumor_bam
+            + " -tumor "
+            + tumor_s_name
+            + " -O "
+            + mutect_output
+        )
         print(command)
-        log_command(command, "Mutect2", self.threads, "Variant Calling Tumor Only")  # "log_command" function run the command in terminal
-        self.mutect_select_variant(mutect_output)  # Separate variants to the SNPs and INDELs file
+        log_command(
+            command, "Mutect2", self.threads, "Variant Calling Tumor Only"
+        )  # "log_command" function run the command in terminal
+        self.mutect_select_variant(
+            mutect_output
+        )  # Separate variants to the SNPs and INDELs file
 
     def mutect_select_variant(self, mutect_output):
         self.mutect_select_variant_snp(mutect_output)
@@ -147,24 +231,45 @@ class VariantCall(object):
 
     def mutect_select_variant_snp(self, mutect_output):
         snp_output = "SNP_" + mutect_output.split("/")[-1]
-        command = self.get_paths.gatk4_path + " SelectVariants -R " + self.ref_dir + " -V " + mutect_output + \
-                  " --select-type-to-include SNP -O " + snp_output
+        command = (
+            self.get_paths.gatk4_path
+            + " SelectVariants -R "
+            + self.ref_dir
+            + " -V "
+            + mutect_output
+            + " --select-type-to-include SNP -O "
+            + snp_output
+        )
         print(command)
         log_command(command, "Mutect2", self.threads, "Select SNP Variants")
         print(snp_output)
 
     def mutect_select_variant_indel(self, mutect_output):
         indel_output = "INDEL_" + mutect_output.split("/")[-1]
-        command = self.get_paths.gatk4_path + " SelectVariants -R " + self.ref_dir + " -V " + mutect_output + \
-                  " --select-type-to-include INDEL -O " + indel_output
+        command = (
+            self.get_paths.gatk4_path
+            + " SelectVariants -R "
+            + self.ref_dir
+            + " -V "
+            + mutect_output
+            + " --select-type-to-include INDEL -O "
+            + indel_output
+        )
         print(command)
         log_command(command, "Mutect2", self.threads, "Select INDEL Variants")
         print(indel_output)
 
     def mutect_select_variant_other(self, mutect_output):
         indel_output = "OTHER_" + mutect_output.split("/")[-1]
-        command = self.get_paths.gatk4_path + " SelectVariants -R " + self.ref_dir + " -V " + mutect_output + \
-                  " --select-type-to-exclude INDEL --select-type-to-exclude SNP -O " + indel_output
+        command = (
+            self.get_paths.gatk4_path
+            + " SelectVariants -R "
+            + self.ref_dir
+            + " -V "
+            + mutect_output
+            + " --select-type-to-exclude INDEL --select-type-to-exclude SNP -O "
+            + indel_output
+        )
         print(command)
         log_command(command, "Mutect2", self.threads, "Select OTHER Variants")
         print(indel_output)
@@ -173,12 +278,23 @@ class VariantCall(object):
 
         snp_output = self.working_directory + "/SNP_" + self.output_name
         indel_output = self.working_directory + "/INDEL_" + self.output_name
-        command = "samtools mpileup -f " + self.ref_dir + " -q 1 -B " + self.germline_bam + " " + \
-                  self.tumor_bam + " | java -jar " + self.get_paths.varscan_path + " somatic --output-snp " \
-                  + snp_output + " --output-indel " + indel_output + \
-                  " --mpileup 1 --min-coverage 8 --min-coverage-normal 8 --min-coverage-tumor 6 --min-var-freq 0.10 " \
-                  "--min-freq-for-hom 0.75 --normal-purity 1.0 --tumor-purity 1.00 --p-value 0.99 " \
-                  "--somatic-p-value 0.05 " + "--strand-filter 0 --output-vcf"
+        command = (
+            "samtools mpileup -f "
+            + self.ref_dir
+            + " -q 1 -B "
+            + self.germline_bam
+            + " "
+            + self.tumor_bam
+            + " | java -jar "
+            + self.get_paths.varscan_path
+            + " somatic --output-snp "
+            + snp_output
+            + " --output-indel "
+            + indel_output
+            + " --mpileup 1 --min-coverage 8 --min-coverage-normal 8 --min-coverage-tumor 6 --min-var-freq 0.10 "
+            "--min-freq-for-hom 0.75 --normal-purity 1.0 --tumor-purity 1.00 --p-value 0.99 "
+            "--somatic-p-value 0.05 " + "--strand-filter 0 --output-vcf"
+        )
         print(command)
         log_command(command, "Varscan Step Pileup", self.threads, "Variant Calling")
         intermediate_varscan_somatic = glob.glob("*" + self.output_name + "*vcf*")
@@ -188,9 +304,16 @@ class VariantCall(object):
     def varscan_caller_step2(self, intermediate_varscan_somatic):
         print(intermediate_varscan_somatic)
         for somatic in intermediate_varscan_somatic:
-            command = "java -jar " + self.get_paths.varscan_path + " processSomatic " + somatic + \
-                      " --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07"
-            log_command(command, "Varscan Step Process Somatic", self.threads, "Variant Calling")
+            command = (
+                "java -jar "
+                + self.get_paths.varscan_path
+                + " processSomatic "
+                + somatic
+                + " --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07"
+            )
+            log_command(
+                command, "Varscan Step Process Somatic", self.threads, "Variant Calling"
+            )
         return glob.glob("*vcf*")
 
     def varscan_caller(self):
@@ -199,10 +322,22 @@ class VariantCall(object):
         print(step2)
 
     def strelka_caller(self):
-        command = self.get_paths.strelka + " --normalBam " + self.germline_bam + " --tumorBam " + self.tumor_bam + \
-                  " --referenceFasta " + self.ref_dir + " --runDir " + self.working_directory
+        command = (
+            self.get_paths.strelka
+            + " --normalBam "
+            + self.germline_bam
+            + " --tumorBam "
+            + self.tumor_bam
+            + " --referenceFasta "
+            + self.ref_dir
+            + " --runDir "
+            + self.working_directory
+        )
         log_command(command, "Strelka Create Workflow", self.threads, "Variant Calling")
         run_workflow_command = "python runWorkflow.py -m local -j " + self.threads
-        log_command(run_workflow_command, "Strelka Create Workflow", self.threads, "Variant Calling")
-
-
+        log_command(
+            run_workflow_command,
+            "Strelka Create Workflow",
+            self.threads,
+            "Variant Calling",
+        )

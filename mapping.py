@@ -1,10 +1,11 @@
+import glob
+import gzip
 import os
+import re
+
+import helpers
 from log_command import log_command
 from paths import GetPaths
-import helpers
-import glob
-import re
-import gzip
 
 
 class Mapping(object):
@@ -44,7 +45,9 @@ class Mapping(object):
         Sort bam files
     """
 
-    def __init__(self, working_directory, map_type, sample_type, library_matching_id, thrds, trim):
+    def __init__(
+        self, working_directory, map_type, sample_type, library_matching_id, thrds, trim
+    ):
         """
         Parameters
         ----------
@@ -76,7 +79,9 @@ class Mapping(object):
         self.sample_type = sample_type
         self.library_matching_id = library_matching_id
         self.threads = str(thrds)  # in case of given as integer it convert to string
-        self.bundle_dir = self.get_paths.ref_dir + "hg19_bundle"  # contains reference bundle
+        self.bundle_dir = (
+            self.get_paths.ref_dir + "hg19_bundle"
+        )  # contains reference bundle
         if trim == "Yes":
             self.trim = True
             self.folder_directory = self.working_directory + "/" + map_type
@@ -103,13 +108,17 @@ class Mapping(object):
         print(os.getcwd())
         fastq_list = helpers.get_fastq()  # Get list of fastq files
         print(fastq_list)
-        info_dict = helpers.get_info(self.sample_type, fastq_list, self.trim)  # Get neccesery information from filename
+        info_dict = helpers.get_info(
+            self.sample_type, fastq_list, self.trim
+        )  # Get neccesery information from filename
         # RG_{..} variables are created for prepare read group information.
         RG_SM = info_dict["Sample_ID"][0]
         RG_PL = "Illumina"
         RG_LB = self.library_matching_id
         # Each fastq file has flow cell information so just read one fastq file first line
-        first_fastq_file_dir = self.working_directory + "/" + fastq_list[0] + ".fastq.gz"
+        first_fastq_file_dir = (
+            self.working_directory + "/" + fastq_list[0] + ".fastq.gz"
+        )
         with gzip.open(first_fastq_file_dir) as f:
             first_line = f.readline()
         flowcell_info = str(first_line).split(":")[2]
@@ -135,25 +144,80 @@ class Mapping(object):
                 map_bam = ""
 
                 # Create output name of bam file after mapping
-                gene_origin = self.map_type + "_" + info_dict["Sample_ID"][0] + "_" + info_dict["Index"][
-                    0] + "_" + i + "_" + k + ".bam"
+                gene_origin = (
+                    self.map_type
+                    + "_"
+                    + info_dict["Sample_ID"][0]
+                    + "_"
+                    + info_dict["Index"][0]
+                    + "_"
+                    + i
+                    + "_"
+                    + k
+                    + ".bam"
+                )
 
                 if self.map_type == "Bwa":  # If selected algorithm is Bwa
-                    add_read_group = ' -R "@RG\\tID:' + RG_ID + '\\tSM:' + RG_SM + '\\tLB:' + RG_LB + '\\tPL:' + \
-                                     RG_PL + '\\tPU:' + RG_PU + '" '  # Read group created and will bed added bam file
+                    add_read_group = (
+                        ' -R "@RG\\tID:'
+                        + RG_ID
+                        + "\\tSM:"
+                        + RG_SM
+                        + "\\tLB:"
+                        + RG_LB
+                        + "\\tPL:"
+                        + RG_PL
+                        + "\\tPU:"
+                        + RG_PU
+                        + '" '
+                    )  # Read group created and will bed added bam file
 
-                    map_bam = "bwa mem -t " + self.threads + " " + add_read_group + self.get_paths.ref_dir + \
-                              "Bwa/ucsc.hg19.fasta " + read1[0] + " " + read2[0] + \
-                              " | samtools view -@" + self.threads + " -bS - > " + gene_origin
+                    map_bam = (
+                        "bwa mem -t "
+                        + self.threads
+                        + " "
+                        + add_read_group
+                        + self.get_paths.ref_dir
+                        + "Bwa/ucsc.hg19.fasta "
+                        + read1[0]
+                        + " "
+                        + read2[0]
+                        + " | samtools view -@"
+                        + self.threads
+                        + " -bS - > "
+                        + gene_origin
+                    )
                     print("mapping =>" + map_bam)
                 elif self.map_type == "Bowtie2":  # If selected algorithm is Bowtie2
 
-                    add_read_group = " --rg-id " + RG_ID + " --rg SM:" + RG_SM + " --rg LB:" + RG_LB + " --rg PL:" + \
-                                     RG_PL + " --rg PU:" + RG_PU  # Read group created and will bed added bam file
+                    add_read_group = (
+                        " --rg-id "
+                        + RG_ID
+                        + " --rg SM:"
+                        + RG_SM
+                        + " --rg LB:"
+                        + RG_LB
+                        + " --rg PL:"
+                        + RG_PL
+                        + " --rg PU:"
+                        + RG_PU
+                    )  # Read group created and will bed added bam file
 
-                    map_bam = "bowtie2 -p" + self.threads + add_read_group + " -x " + self.get_paths.ref_dir + \
-                              "Bowtie2/hg_19_bowtie2 -1 " + read1[0] + " -2 " + read2[0] + \
-                              " | samtools view -@" + self.threads + " -bS - > " + gene_origin
+                    map_bam = (
+                        "bowtie2 -p"
+                        + self.threads
+                        + add_read_group
+                        + " -x "
+                        + self.get_paths.ref_dir
+                        + "Bowtie2/hg_19_bowtie2 -1 "
+                        + read1[0]
+                        + " -2 "
+                        + read2[0]
+                        + " | samtools view -@"
+                        + self.threads
+                        + " -bS - > "
+                        + gene_origin
+                    )
                     print("mapping =>" + map_bam)
                 else:
                     return "Please specify the map type Bwa/Bowtie "
@@ -162,14 +226,21 @@ class Mapping(object):
                 # The step, # of threads and class name added for keep logging purposes
                 log_command(map_bam, "Mapping", self.threads, "Mapping")
                 self.file_list.append(gene_origin)  # Output file's name added to list
-                self.convert_sort(gene_origin)  # Each output bam file sorted and indexed with this function
+                self.convert_sort(
+                    gene_origin
+                )  # Each output bam file sorted and indexed with this function
 
         all_sortedbam_files = glob.glob("SortedBAM*.bam")  # Get all sorted bam files
 
         # Below helper function get working directory, list of files created in this step, maping type and step's name
         # in order to create folder for that particular step inside base on mapping file
-        helpers.create_folder(self.working_directory, self.file_list, map_type=self.map_type, step="Mapping",
-                              folder_directory=self.folder_directory)
+        helpers.create_folder(
+            self.working_directory,
+            self.file_list,
+            map_type=self.map_type,
+            step="Mapping",
+            folder_directory=self.folder_directory,
+        )
         print("print sorted all bam files ")
         print(all_sortedbam_files)
         return all_sortedbam_files  # Return list of sorted bam files
@@ -184,10 +255,19 @@ class Mapping(object):
             Bam file's name that created by mapping algorithm
 
         """
-        convert_sort = "samtools view -@" + self.threads + " -bS " + sort_gene_origin + " | samtools sort -@" + \
-                       self.threads + " -o SortedBAM_" + sort_gene_origin
+        convert_sort = (
+            "samtools view -@"
+            + self.threads
+            + " -bS "
+            + sort_gene_origin
+            + " | samtools sort -@"
+            + self.threads
+            + " -o SortedBAM_"
+            + sort_gene_origin
+        )
         log_command(convert_sort, "Convert Sort", self.threads, "Mapping")
         self.file_list.append("SortedBAM_" + sort_gene_origin)
-        indexed = helpers.create_index("SortedBAM_" + sort_gene_origin, "Create Index", self.threads, "Mapping")
+        indexed = helpers.create_index(
+            "SortedBAM_" + sort_gene_origin, "Create Index", self.threads, "Mapping"
+        )
         self.file_list.append(indexed)
-

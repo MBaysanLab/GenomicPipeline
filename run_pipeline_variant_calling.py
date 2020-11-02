@@ -1,9 +1,19 @@
-import variant_calling
 import variant_annotation
+import variant_calling
 
 
-def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype, var_variantcaller, threads_p,
-                        s_name, tumor_only, tumor_interval=None, germline_interval=None):
+def call_variant_caller(
+    working_directory,
+    tumor_bam,
+    germline_bam,
+    var_maptype,
+    var_variantcaller,
+    threads_p,
+    s_name,
+    tumor_only,
+    tumor_interval=None,
+    germline_interval=None,
+):
     wd = working_directory
 
     if wd[-1] == "/" or wd[-1] == "\\":
@@ -20,21 +30,42 @@ def call_variant_caller(working_directory, tumor_bam, germline_bam, var_maptype,
         gm = gm[:-1]
 
     if var_variantcaller == "Mutect2" or var_variantcaller == "Mutect2_gatk3":
-        pipeline2 = variant_calling.VariantCall(variant_caller=var_variantcaller, thrds=threads_p, map_type=var_maptype,
-                                                germline_bam=gm, germline_interval=gm_interval, wd=wd,
-                                                tumor_bam=tumor_bam, tumor_interval=tumor_interval,
-                                                sample_name=s_name, tumor_only=tumor_only)
+        pipeline2 = variant_calling.VariantCall(
+            variant_caller=var_variantcaller,
+            thrds=threads_p,
+            map_type=var_maptype,
+            germline_bam=gm,
+            germline_interval=gm_interval,
+            wd=wd,
+            tumor_bam=tumor_bam,
+            tumor_interval=tumor_interval,
+            sample_name=s_name,
+            tumor_only=tumor_only,
+        )
     else:
-        pipeline2 = variant_calling.VariantCall(variant_caller=var_variantcaller, thrds=threads_p, map_type=var_maptype,
-                                                germline_bam=gm, germline_interval=None, wd=wd, tumor_bam=tumor_bam,
-                                                tumor_interval=None, sample_name=s_name,  tumor_only=tumor_only)
+        pipeline2 = variant_calling.VariantCall(
+            variant_caller=var_variantcaller,
+            thrds=threads_p,
+            map_type=var_maptype,
+            germline_bam=gm,
+            germline_interval=None,
+            wd=wd,
+            tumor_bam=tumor_bam,
+            tumor_interval=None,
+            sample_name=s_name,
+            tumor_only=tumor_only,
+        )
     pipeline2_success = pipeline2.run_pipeline()
 
-    annotate = variant_annotation.VariantAnnotation(variant_annotater="Annovar", thread_v=threads_p,
-                                                    wd=pipeline2_success, sample_name=s_name, will_annotate=[],
-                                                    annotate_all=True)
+    annotate = variant_annotation.VariantAnnotation(
+        variant_annotater="Annovar",
+        thread_v=threads_p,
+        wd=pipeline2_success,
+        sample_name=s_name,
+        will_annotate=[],
+        annotate_all=True,
+    )
 
     annotate.run_annotation()
 
     return pipeline2_success
-

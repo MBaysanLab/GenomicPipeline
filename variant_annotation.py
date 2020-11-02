@@ -1,15 +1,18 @@
-import os
 import glob
+import os
+import shutil
+
+import pandas as pd
+
+import helpers
 from log_command import log_command
 from paths import GetPaths
-import helpers
-import pandas as pd
-import shutil
 
 
 class VariantAnnotation(object):
-
-    def __init__(self, variant_annotater, wd, sample_name, thread_v, will_annotate, annotate_all):
+    def __init__(
+        self, variant_annotater, wd, sample_name, thread_v, will_annotate, annotate_all
+    ):
         self.get_paths = GetPaths()
         self.working_directory = wd
         os.chdir(self.working_directory)
@@ -37,17 +40,30 @@ class VariantAnnotation(object):
                 input_file = self.working_directory + "/" + input_f
                 output_f = "Annovar_" + "_".join(input_f.split(".")[:-1])
                 output_file = self.working_directory + "/" + output_f
-                command = self.annovar_dir + " --vcfinput " + input_file + " " + self.humandb + \
-                          " -buildver hg19 -out " + output_file + " -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f " \
-                          "-nastring . -polish -xreffile " + self.xref
+                command = (
+                    self.annovar_dir
+                    + " --vcfinput "
+                    + input_file
+                    + " "
+                    + self.humandb
+                    + " -buildver hg19 -out "
+                    + output_file
+                    + " -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f "
+                    "-nastring . -polish -xreffile " + self.xref
+                )
                 print(command)
                 log_command(command, "Annovar", self.threads, "Variant Annotation")
                 output_fs = glob.glob("*" + output_f + "*")
                 self.file_list.extend(output_fs)
-            helpers.create_folder(self.working_directory, self.file_list, step="Annovar",
-                                  folder_directory=self.working_directory)
+            helpers.create_folder(
+                self.working_directory,
+                self.file_list,
+                step="Annovar",
+                folder_directory=self.working_directory,
+            )
         else:
             return False
+
 
 def annovar_custom_txt(txt_file, vcf_file):
     data = []
@@ -74,5 +90,3 @@ def annovar_custom_txt(txt_file, vcf_file):
     df.head()
     output_file_name = "Merged_" + txt_file.split("/")[-1]
     df.to_csv(output_file_name)
-
-

@@ -1,15 +1,16 @@
-import re
-import os
 import glob
+import os
+import re
+
+import helpers
 from log_command import log_command
 from paths import GetPaths
-import helpers
-
 
 
 class QC(object):
-
-    def __init__(self, working_directory, sample_type, thread, fastq_list, info_dict, map_type):
+    def __init__(
+        self, working_directory, sample_type, thread, fastq_list, info_dict, map_type
+    ):
         self.working_directory = working_directory
         self.thread = thread
         self.sample_type = sample_type
@@ -25,7 +26,9 @@ class QC(object):
         for fastq_file in all_fastq_files:
             file = self.working_directory + "/" + fastq_file
             command = self.paths.fastqc + " " + file
-            log_command(command, "FastQC Quality Control", self.thread, "Quality Control")
+            log_command(
+                command, "FastQC Quality Control", self.thread, "Quality Control"
+            )
         fastqc_files = glob.glob("*fastqc*")
         self.file_list.extend(fastqc_files)
 
@@ -38,12 +41,34 @@ class QC(object):
                 r2 = re.compile(".*" + i + "_R2_" + k)
                 read2 = [s + ".fastq.gz" for s in self.fastq_list if r2.match(s)]
 
-                gene_origin = self.info_dict["Sample_ID"][0] + "_" + self.info_dict["Index"][
-                    0] + "_" + i + "_" + k
+                gene_origin = (
+                    self.info_dict["Sample_ID"][0]
+                    + "_"
+                    + self.info_dict["Index"][0]
+                    + "_"
+                    + i
+                    + "_"
+                    + k
+                )
 
-                command = self.paths.fastp + " -w " + self.thread + " --in1 " + read1[0] + " --in2 " + \
-                          read2[0] + " --out1 trim_" + read1[0] + " --out2 trim_" + read2[0] + \
-                          " --html " + gene_origin + ".html --json " + gene_origin + ".json"
+                command = (
+                    self.paths.fastp
+                    + " -w "
+                    + self.thread
+                    + " --in1 "
+                    + read1[0]
+                    + " --in2 "
+                    + read2[0]
+                    + " --out1 trim_"
+                    + read1[0]
+                    + " --out2 trim_"
+                    + read2[0]
+                    + " --html "
+                    + gene_origin
+                    + ".html --json "
+                    + gene_origin
+                    + ".json"
+                )
 
                 log_command(command, "Fastp Trim", self.thread, "Quality Control")
                 self.file_list.append(gene_origin + ".html")
@@ -56,5 +81,6 @@ class QC(object):
     def run_qc(self):
         self.fastqc()
         self.qc_trim()
-        helpers.create_folder(self.working_directory, self.file_list, step="QC", map_type=self.map_type)
-
+        helpers.create_folder(
+            self.working_directory, self.file_list, step="QC", map_type=self.map_type
+        )
